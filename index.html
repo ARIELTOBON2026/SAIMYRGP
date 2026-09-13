@@ -482,19 +482,14 @@
        LÓGICA DE LA APLICACIÓN (ACTUALIZADA PARA GITHUB PAGES)
   ========================================================== -->
   <script>
-    // ============================================================
+        // ============================================================
     // CONFIGURACIÓN DE LA URL DEL SCRIPT
     // ============================================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4D5yfMUk1ygK37jeFTKlvj_ixOprDpV7M3Q_KEeI0IYEdiHRzRM_5YsoqV-0sulEU/execc";
+    // Pega aquí la URL que copiaste en el Paso 1 (debe terminar en /exec)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNY22jyBnXfkQxEwwLrTmSLKHNipQMXtWnpVXGlnqL360p5eQ2Q8gUd6F6cZijAVs/exec";
 
     // ============================================================
-    // VARIABLES GLOBALES
-    // ============================================================
-    let filaEditando = null;
-    let registrosBusquedaActual = [];
-
-    // ============================================================
-    // FUNCIÓN UNIFICADA PARA COMUNICACIÓN CON GOOGLE APPS SCRIPT
+    // FUNCIÓN UNIFICADA DE COMUNICACIÓN (ANTI-CORS)
     // ============================================================
     function callGoogleScript(accion, params = {}) {
       const payload = {
@@ -502,18 +497,33 @@
         ...params
       };
 
+      console.log("📤 Enviando a Google Apps Script:", accion, payload);
+
       return fetch(SCRIPT_URL, {
         method: 'POST',
+        // 'text/plain' es OBLIGATORIO. Evita que el navegador envíe una 
+        // solicitud OPTIONS (preflight) que Google Apps Script no sabe manejar.
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8' // Evita el preflight OPTIONS de CORS
+          'Content-Type': 'text/plain;charset=utf-8'
         },
         body: JSON.stringify(payload)
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Error en la respuesta del servidor: ' + response.status);
+      .then(async response => {
+        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
+        
+        // Verificar si Google devolvió un error en formato HTML (común si falla la autorización)
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          return response.json();
+        } else {
+          const text = await response.text();
+          console.error("❌ El servidor no devolvió JSON. Respuesta cruda:", text.substring(0, 500));
+          throw new Error("Error del servidor: La respuesta no es JSON. Revisa la consola (F12).");
         }
-        return response.json();
+      })
+      .catch(error => {
+        console.error("❌ Error de red o CORS:", error);
+        throw new Error("No se pudo conectar con Google Apps Script. Verifica: 1) La URL, 2) Que el acceso sea 'Cualquier persona', 3) Tu conexión a internet.");
       });
     }
 

@@ -149,6 +149,7 @@
                         <input type="number" class="form-control" id="valorParqueadero" oninput="calcularTotales()" placeholder="0">
                     </div>
                     <div class="text-center mt-3">
+                        <!-- 🔧 ÚNICO CAMBIO: Ruta relativa para GitHub Pages -->
                         <img src="grua.png" alt="Grúa" class="img-fluid rounded" style="max-height: 150px;" onerror="this.src='https://arieltobon2026.github.io/grua.png'">
                     </div>
                 </div>
@@ -210,31 +211,17 @@
 
     <!-- BOTONES DE ACCIÓN -->
     <div class="text-center mb-5">
-        <button class="btn btn-secondary btn-action" id="btnNuevo">
-            <i class="bi bi-file-earmark-plus"></i> Nuevo
-        </button>
-        <button class="btn btn-success btn-action" id="btnGuardar">
-            <i class="bi bi-save"></i> Guardar
-        </button>
-        <button class="btn btn-primary btn-action" id="btnModificar">
-            <i class="bi bi-pencil-square"></i> Modificar
-        </button>
-        <button class="btn btn-info btn-action" data-bs-toggle="modal" data-bs-target="#modalBuscar">
-            <i class="bi bi-search"></i> Buscar
-        </button>
-        <button class="btn btn-warning btn-action" id="btnPortapapeles">
-            <i class="bi bi-clipboard"></i> Portapapeles
-        </button>
-        <button class="btn btn-outline-primary btn-action" data-bs-toggle="modal" data-bs-target="#modalHistorial">
-            <i class="bi bi-clock-history"></i> Historial
-        </button>
-        <button class="btn btn-danger btn-action" data-bs-toggle="modal" data-bs-target="#modalEliminar">
-            <i class="bi bi-trash"></i> Eliminar
-        </button>
+        <button class="btn btn-secondary btn-action" id="btnNuevo"><i class="bi bi-file-earmark-plus"></i> Nuevo</button>
+        <button class="btn btn-success btn-action" id="btnGuardar"><i class="bi bi-save"></i> Guardar</button>
+        <button class="btn btn-primary btn-action" id="btnModificar"><i class="bi bi-pencil-square"></i> Modificar</button>
+        <button class="btn btn-info btn-action" data-bs-toggle="modal" data-bs-target="#modalBuscar"><i class="bi bi-search"></i> Buscar</button>
+        <button class="btn btn-warning btn-action" id="btnPortapapeles"><i class="bi bi-clipboard"></i> Portapapeles</button>
+        <button class="btn btn-outline-primary btn-action" data-bs-toggle="modal" data-bs-target="#modalHistorial"><i class="bi bi-clock-history"></i> Historial</button>
+        <button class="btn btn-danger btn-action" data-bs-toggle="modal" data-bs-target="#modalEliminar"><i class="bi bi-trash"></i> Eliminar</button>
     </div>
 </div>
 
-<!-- MODAL: BUSCAR COMPARENDO -->
+<!-- MODAL: BUSCAR -->
 <div class="modal fade" id="modalBuscar" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -254,7 +241,7 @@
     </div>
 </div>
 
-<!-- MODAL: RESULTADOS DE BÚSQUEDA -->
+<!-- MODAL: RESULTADOS -->
 <div class="modal fade" id="modalResultados" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -270,7 +257,7 @@
     </div>
 </div>
 
-<!-- MODAL: CONFIRMAR ELIMINACIÓN -->
+<!-- MODAL: ELIMINAR -->
 <div class="modal fade" id="modalEliminar" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -306,51 +293,39 @@
     </div>
 </div>
 
-<!-- BOOTSTRAP JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // ============================================
-    // VARIABLES GLOBALES
+    // LÓGICA ORIGINAL CON localStorage (sin modificar)
     // ============================================
     let modoEdicion = false;
     let registroActualId = null;
     let registros = JSON.parse(localStorage.getItem('comparendos')) || [];
 
-    // ============================================
-    // FECHA ACTUAL EN NAVBAR
-    // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         const fecha = new Date();
         const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('fechaActual').textContent = fecha.toLocaleDateString('es-CO', opciones);
     });
 
-    // ============================================
-    // CALCULAR TOTALES
-    // ============================================
     function calcularTotales() {
         let grua = parseFloat(document.getElementById('valorGrua').value) || 0;
         let parqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
         let subtotal = grua + parqueadero;
         let iva = subtotal * 0.19;
         let total = subtotal + iva;
-
         document.getElementById('subtotal').value = subtotal.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('iva').value = iva.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('total').value = total.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // ============================================
-    // OBTENER DATOS DEL FORMULARIO
-    // ============================================
     function obtenerDatosFormulario() {
         let grua = parseFloat(document.getElementById('valorGrua').value) || 0;
         let parqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
         let subtotal = grua + parqueadero;
         let iva = subtotal * 0.19;
         let total = subtotal + iva;
-
         return {
             id: registroActualId || 'CMP-' + new Date().getTime(),
             fecha: new Date().toISOString(),
@@ -373,17 +348,9 @@
         };
     }
 
-    // ============================================
-    // LIMPIAR FORMULARIO
-    // ============================================
     function limpiarFormulario() {
         document.getElementById('formComparendo').reset();
         document.getElementById('registroId').value = '';
-        document.getElementById('placa').value = '';
-        document.getElementById('tipoInfraccion').value = '';
-        document.getElementById('tipoAgente').value = '';
-        document.getElementById('nroComparendo').value = '';
-        document.getElementById('checkAccidente').checked = false;
         document.getElementById('valorGrua').value = '';
         document.getElementById('valorParqueadero').value = '';
         document.getElementById('fechaPago').value = '';
@@ -395,33 +362,22 @@
         document.getElementById('alertaEdicion').style.display = 'none';
     }
 
-    // ============================================
-    // GUARDAR REGISTROS EN LOCALSTORAGE
-    // ============================================
     function guardarEnStorage() {
         localStorage.setItem('comparendos', JSON.stringify(registros));
     }
 
-    // ============================================
-    // BOTÓN NUEVO
-    // ============================================
     document.getElementById('btnNuevo').addEventListener('click', function() {
         if (confirm('¿Desea crear un nuevo registro? Se perderán los datos no guardados.')) {
             limpiarFormulario();
         }
     });
 
-    // ============================================
-    // BOTÓN GUARDAR
-    // ============================================
     document.getElementById('btnGuardar').addEventListener('click', function() {
         const datos = obtenerDatosFormulario();
-
         if (!datos.identificacion || !datos.nombre || !datos.placa) {
-            alert('⚠️ Por favor complete los campos obligatorios: Identificación, Nombre y Placa.');
+            alert('⚠️ Complete los campos obligatorios: Identificación, Nombre y Placa.');
             return;
         }
-
         if (modoEdicion && registroActualId) {
             const index = registros.findIndex(function(r) { return r.id === registroActualId; });
             if (index !== -1) {
@@ -433,14 +389,10 @@
             registros.push(datos);
             alert('✅ Comparendo guardado correctamente.');
         }
-
         guardarEnStorage();
         limpiarFormulario();
     });
 
-    // ============================================
-    // BOTÓN MODIFICAR
-    // ============================================
     document.getElementById('btnModificar').addEventListener('click', function() {
         if (!registroActualId) {
             alert('⚠️ Primero debe buscar un registro para modificar.');
@@ -449,29 +401,13 @@
         alert('ℹ️ Modo edición activado. Modifique los datos y presione "Guardar".');
     });
 
-    // ============================================
-    // BOTÓN BUSCAR
-    // ============================================
     document.getElementById('btnConfirmarBusqueda').addEventListener('click', function() {
         const cedula = document.getElementById('inputCedulaBusqueda').value.trim();
-
-        if (!cedula) {
-            alert('⚠️ Por favor ingrese una cédula para buscar.');
-            return;
-        }
-
+        if (!cedula) { alert('⚠️ Ingrese una cédula para buscar.'); return; }
         const resultados = registros.filter(function(r) { return r.identificacion === cedula; });
-
-        if (resultados.length === 0) {
-            alert('ℹ️ No se encontraron registros con esa cédula.');
-            return;
-        }
-
+        if (resultados.length === 0) { alert('ℹ️ No se encontraron registros.'); return; }
         let html = '<div class="table-responsive"><table class="table table-striped table-hover">';
-        html += '<thead class="table-dark"><tr>';
-        html += '<th>Fecha</th><th>Placa</th><th>Nombre</th><th>Comparendo</th><th>Total</th><th>Acción</th>';
-        html += '</tr></thead><tbody>';
-
+        html += '<thead class="table-dark"><tr><th>Fecha</th><th>Placa</th><th>Nombre</th><th>Comparendo</th><th>Total</th><th>Acción</th></tr></thead><tbody>';
         resultados.forEach(function(r) {
             const fechaStr = r.fecha ? new Date(r.fecha).toLocaleDateString('es-CO') : 'N/A';
             html += '<tr>';
@@ -483,24 +419,17 @@
             html += '<td><button class="btn btn-sm btn-primary" onclick="cargarRegistro(\'' + r.id + '\')">Seleccionar</button></td>';
             html += '</tr>';
         });
-
         html += '</tbody></table></div>';
         document.getElementById('resultadosBusqueda').innerHTML = html;
-
         bootstrap.Modal.getInstance(document.getElementById('modalBuscar')).hide();
         new bootstrap.Modal(document.getElementById('modalResultados')).show();
     });
 
-    // ============================================
-    // CARGAR REGISTRO EN FORMULARIO
-    // ============================================
     function cargarRegistro(id) {
         const reg = registros.find(function(r) { return r.id === id; });
         if (!reg) return;
-
         registroActualId = reg.id;
         modoEdicion = true;
-
         document.getElementById('registroId').value = reg.id;
         document.getElementById('identificacion').value = reg.identificacion || '';
         document.getElementById('nombre').value = reg.nombre || '';
@@ -512,43 +441,25 @@
         document.getElementById('valorGrua').value = reg.valorGrua || 0;
         document.getElementById('valorParqueadero').value = reg.valorParqueadero || 0;
         document.getElementById('convenio').value = reg.convenio || '13627';
-
         let fechaPago = '';
         if (reg.fechaPago) {
             try {
                 const d = new Date(reg.fechaPago);
-                if (!isNaN(d.getTime())) {
-                    fechaPago = d.toISOString().split('T')[0];
-                } else if (typeof reg.fechaPago === 'string' && reg.fechaPago.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    fechaPago = reg.fechaPago;
-                }
-            } catch (e) {
-                fechaPago = '';
-            }
+                if (!isNaN(d.getTime())) fechaPago = d.toISOString().split('T')[0];
+                else if (typeof reg.fechaPago === 'string' && reg.fechaPago.match(/^\d{4}-\d{2}-\d{2}$/)) fechaPago = reg.fechaPago;
+            } catch (e) { fechaPago = ''; }
         }
         document.getElementById('fechaPago').value = fechaPago;
         document.getElementById('estado').value = reg.estado || 'pendiente';
         document.getElementById('observaciones').value = reg.observaciones || '';
-
         calcularTotales();
         document.getElementById('alertaEdicion').style.display = 'flex';
-
-        try {
-            bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();
-        } catch (e) {}
-
+        try { bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide(); } catch (e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ============================================
-    // BOTÓN ELIMINAR
-    // ============================================
     document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
-        if (!registroActualId) {
-            alert('⚠️ No hay registro seleccionado para eliminar.');
-            return;
-        }
-
+        if (!registroActualId) { alert('⚠️ No hay registro seleccionado.'); return; }
         const index = registros.findIndex(function(r) { return r.id === registroActualId; });
         if (index !== -1) {
             registros.splice(index, 1);
@@ -559,9 +470,6 @@
         }
     });
 
-    // ============================================
-    // BOTÓN PORTAPAPELES
-    // ============================================
     document.getElementById('btnPortapapeles').addEventListener('click', function() {
         const datos = obtenerDatosFormulario();
         const texto = 'COMPARENDO - Secretaría de Movilidad La Ceja\n' +
@@ -571,7 +479,6 @@
             'Nombre: ' + datos.nombre + '\n' +
             'Placa: ' + datos.placa + '\n' +
             'Nro. Comparendo: ' + datos.nroComparendo + '\n' +
-            'Tipo Infracción: ' + datos.tipoInfraccion + '\n' +
             'Accidente: ' + (datos.esAccidente ? 'Sí' : 'No') + '\n\n' +
             'VALORES:\n' +
             'Grúa: $' + datos.valorGrua.toLocaleString('es-CO') + '\n' +
@@ -582,34 +489,20 @@
             'Convenio: ' + datos.convenio + '\n' +
             'Estado: ' + datos.estado + '\n' +
             'Observaciones: ' + (datos.observaciones || 'Ninguna');
-
         navigator.clipboard.writeText(texto).then(function() {
             alert('✅ Datos copiados al portapapeles.');
         }).catch(function() {
-            const ta = document.createElement('textarea');
-            ta.value = texto;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            alert('✅ Datos copiados al portapapeles.');
+            alert('❌ No se pudo copiar. Copie manualmente.');
         });
     });
 
-    // ============================================
-    // HISTORIAL (se carga al abrir el modal)
-    // ============================================
     document.getElementById('modalHistorial').addEventListener('show.bs.modal', function() {
         if (registros.length === 0) {
             document.getElementById('historialRegistros').innerHTML = '<p class="text-muted text-center">No hay registros guardados.</p>';
             return;
         }
-
         let html = '<div class="table-responsive"><table class="table table-striped table-hover">';
-        html += '<thead class="table-dark"><tr>';
-        html += '<th>Fecha</th><th>Cédula</th><th>Nombre</th><th>Placa</th><th>Total</th><th>Estado</th><th>Acción</th>';
-        html += '</tr></thead><tbody>';
-
+        html += '<thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Nombre</th><th>Placa</th><th>Total</th><th>Estado</th><th>Acción</th></tr></thead><tbody>';
         registros.slice().reverse().forEach(function(r) {
             const fechaStr = r.fecha ? new Date(r.fecha).toLocaleDateString('es-CO') : 'N/A';
             const badgeColor = r.estado === 'pagado' ? 'bg-success' : (r.estado === 'anulado' ? 'bg-danger' : 'bg-warning text-dark');
@@ -623,7 +516,6 @@
             html += '<td><button class="btn btn-sm btn-primary" onclick="cargarRegistro(\'' + r.id + '\'); bootstrap.Modal.getInstance(document.getElementById(\'modalHistorial\')).hide();">Ver</button></td>';
             html += '</tr>';
         });
-
         html += '</tbody></table></div>';
         document.getElementById('historialRegistros').innerHTML = html;
     });

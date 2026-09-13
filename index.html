@@ -478,16 +478,44 @@
 
   <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
   <!-- =========================================================
-       LÓGICA DE LA APLICACIÓN
+       LÓGICA DE LA APLICACIÓN (ACTUALIZADA PARA GITHUB PAGES)
   ========================================================== -->
   <script>
+    // ============================================================
+    // CONFIGURACIÓN DE LA URL DEL SCRIPT
+    // ============================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNSu4EUzug4AjpCwsbjYdVK3M5MMJZoFjVLnWpczK16zQ50YxaE-bNDkqPvv1uJKBC/exec";
+
     // ============================================================
     // VARIABLES GLOBALES
     // ============================================================
     let filaEditando = null;
     let registrosBusquedaActual = [];
+
+    // ============================================================
+    // FUNCIÓN UNIFICADA PARA COMUNICACIÓN CON GOOGLE APPS SCRIPT
+    // ============================================================
+    function callGoogleScript(accion, params = {}) {
+      const payload = {
+        accion: accion,
+        ...params
+      };
+
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8' // Evita el preflight OPTIONS de CORS
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor: ' + response.status);
+        }
+        return response.json();
+      });
+    }
 
     // ============================================================
     // INICIALIZACIÓN
@@ -590,59 +618,36 @@
     }
 
     // ============================================================
-    // VALIDAR CÉDULA
+    // VALIDAR CÉDULA Y PLACA
     // ============================================================
     function validarCedula() {
       const cedula = document.getElementById('cedulaInfractor').value.trim();
-      if (!cedula) {
-        mostrarError('cedulaInfractor', 'La cédula es obligatoria');
-        return false;
-      }
-      if (!/^\d{6,10}$/.test(cedula)) {
-        mostrarError('cedulaInfractor', 'La cédula debe tener entre 6 y 10 dígitos numéricos');
-        return false;
-      }
+      if (!cedula) { mostrarError('cedulaInfractor', 'La cédula es obligatoria'); return false; }
+      if (!/^\d{6,10}$/.test(cedula)) { mostrarError('cedulaInfractor', 'La cédula debe tener entre 6 y 10 dígitos numéricos'); return false; }
       ocultarError('cedulaInfractor');
       return true;
     }
 
-    // ============================================================
-    // VALIDAR PLACA
-    // ============================================================
     function validarPlaca() {
       const placa = document.getElementById('placa').value.trim().toUpperCase();
-      if (!placa) {
-        mostrarError('placa', 'La placa es obligatoria');
-        return false;
-      }
-      if (!/^[A-Z]{3}\d{3}$/.test(placa) && !/^[A-Z]{3}\d{2}[A-Z]$/.test(placa)) {
-        mostrarError('placa', 'Formato de placa inválido (ABC123 o ABC12D)');
-        return false;
-      }
+      if (!placa) { mostrarError('placa', 'La placa es obligatoria'); return false; }
+      if (!/^[A-Z]{3}\d{3}$/.test(placa) && !/^[A-Z]{3}\d{2}[A-Z]$/.test(placa)) { mostrarError('placa', 'Formato de placa inválido (ABC123 o ABC12D)'); return false; }
       ocultarError('placa');
       return true;
     }
 
-    // ============================================================
-    // MOSTRAR / OCULTAR ERROR
-    // ============================================================
     function mostrarError(campo, mensaje) {
       const input = document.getElementById(campo);
       const errorDiv = document.getElementById(campo + 'Error');
       input.classList.add('is-invalid');
-      if (errorDiv) {
-        errorDiv.textContent = mensaje;
-        errorDiv.style.display = 'block';
-      }
+      if (errorDiv) { errorDiv.textContent = mensaje; errorDiv.style.display = 'block'; }
     }
 
     function ocultarError(campo) {
       const input = document.getElementById(campo);
       const errorDiv = document.getElementById(campo + 'Error');
       input.classList.remove('is-invalid');
-      if (errorDiv) {
-        errorDiv.style.display = 'none';
-      }
+      if (errorDiv) { errorDiv.style.display = 'none'; }
     }
 
     // ============================================================
@@ -651,16 +656,12 @@
     function nuevoFormulario() {
       document.getElementById('comparendoForm').reset();
       document.getElementById('filaActual').value = '';
-      
       filaEditando = null;
       registrosBusquedaActual = [];
-      
       document.getElementById('modoEdicion').style.display = 'none';
       document.getElementById('textoBotonGuardar').textContent = 'GUARDAR';
-      
       document.getElementById('cedulaInfractor').classList.remove('is-invalid');
       document.getElementById('placa').classList.remove('is-invalid');
-      
       calcularTotales();
       actualizarObservaciones();
       mostrarAlerta('📝 Formulario limpiado', 'info');
@@ -690,13 +691,9 @@
         if (!cedulaValida) mensaje += '• Cédula: debe tener entre 6 y 10 dígitos numéricos\n';
         if (!placaValida) mensaje += '• Placa: formato inválido (use ABC123 o ABC12D)\n';
         camposFaltantes.forEach(campo => { mensaje += `• ${campo}: campo obligatorio\n`; });
-        
         mostrarAlerta(mensaje.replace(/\n/g, '<br>'), 'warning');
         const primerError = document.querySelector('.is-invalid');
-        if (primerError) {
-          primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          primerError.focus();
-        }
+        if (primerError) { primerError.scrollIntoView({ behavior: 'smooth', block: 'center' }); primerError.focus(); }
         return;
       }
 
@@ -730,43 +727,25 @@
       btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
       btnGuardar.disabled = true;
 
-      if (fila) {
-        google.script.run
-          .withSuccessHandler(function(response) {
-            btnGuardar.innerHTML = textoOriginal;
-            btnGuardar.disabled = false;
-            if (response.success) {
-              mostrarAlerta('✅ ' + response.message + ' - Comparendo actualizado exitosamente', 'success');
-              nuevoFormulario();
-            } else {
-              mostrarAlerta('❌ ' + response.message, 'danger');
-            }
-          })
-          .withFailureHandler(function(error) {
-            btnGuardar.innerHTML = textoOriginal;
-            btnGuardar.disabled = false;
-            mostrarAlerta('❌ Error: ' + error.message, 'danger');
-          })
-          .actualizarComparendo(Number(fila), datos);
-      } else {
-        google.script.run
-          .withSuccessHandler(function(response) {
-            btnGuardar.innerHTML = textoOriginal;
-            btnGuardar.disabled = false;
-            if (response.success) {
-              mostrarAlerta('✅ ' + response.message + ' - Comparendo registrado exitosamente', 'success');
-              nuevoFormulario();
-            } else {
-              mostrarAlerta('❌ ' + response.message, 'danger');
-            }
-          })
-          .withFailureHandler(function(error) {
-            btnGuardar.innerHTML = textoOriginal;
-            btnGuardar.disabled = false;
-            mostrarAlerta('❌ Error: ' + error.message, 'danger');
-          })
-          .guardarComparendo(datos);
-      }
+      callGoogleScript(fila ? 'actualizar' : 'guardar', { 
+        fila: fila ? Number(fila) : null, 
+        datos: datos 
+      })
+      .then(response => {
+        btnGuardar.innerHTML = textoOriginal;
+        btnGuardar.disabled = false;
+        if (response.success) {
+          mostrarAlerta('✅ ' + response.message + (fila ? ' - Comparendo actualizado exitosamente' : ' - Comparendo registrado exitosamente'), 'success');
+          nuevoFormulario();
+        } else {
+          mostrarAlerta('❌ ' + response.message, 'danger');
+        }
+      })
+      .catch(error => {
+        btnGuardar.innerHTML = textoOriginal;
+        btnGuardar.disabled = false;
+        mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
+      });
     }
 
     // ============================================================
@@ -781,34 +760,27 @@
 
     function ejecutarBusqueda() {
       const valor = document.getElementById('valorBusqueda').value.trim();
-      if (!valor) {
-        mostrarAlerta('⚠️ Debe ingresar una cédula para buscar', 'warning');
-        return;
-      }
-      if (!/^\d+$/.test(valor)) {
-        mostrarAlerta('⚠️ La cédula debe contener únicamente números', 'warning');
-        return;
-      }
+      if (!valor) { mostrarAlerta('⚠️ Debe ingresar una cédula para buscar', 'warning'); return; }
+      if (!/^\d+$/.test(valor)) { mostrarAlerta('⚠️ La cédula debe contener únicamente números', 'warning'); return; }
 
       const btn = document.getElementById('btnEjecutarBusqueda');
       const textoOriginal = btn.innerHTML;
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
       btn.disabled = true;
 
-      google.script.run
-        .withSuccessHandler(function(response) {
+      callGoogleScript('buscar', { cedula: valor })
+        .then(response => {
           btn.innerHTML = textoOriginal;
           btn.disabled = false;
           const modalBusqueda = bootstrap.Modal.getInstance(document.getElementById('modalBusqueda'));
           if (modalBusqueda) modalBusqueda.hide();
           mostrarResultadosBusqueda(response);
         })
-        .withFailureHandler(function(error) {
+        .catch(error => {
           btn.innerHTML = textoOriginal;
           btn.disabled = false;
           mostrarAlerta('❌ Error al buscar: ' + error.message, 'danger');
-        })
-        .buscarComparendoPorCedula(valor);
+        });
     }
 
     function mostrarResultadosBusqueda(response) {
@@ -879,10 +851,8 @@
       document.getElementById('nombre').value = limpiarValor(d.nombre);
       document.getElementById('placa').value = limpiarValor(d.placa).toUpperCase();
       document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo);
-      
       document.getElementById('tipoInfraccion').value = limpiarValor(d.tipoInfraccion);
       document.getElementById('tipoAgente').value = limpiarValor(d.tipoAgente);
-      
       document.getElementById('valorGrua').value = convertirNumero(d.valorGrua);
       document.getElementById('valorParqueadero').value = convertirNumero(d.valorParqueadero);
       document.getElementById('fechaPago').value = convertirFechaParaInput(d.fechaPago);
@@ -900,9 +870,6 @@
       const modalResultados = bootstrap.Modal.getInstance(document.getElementById('modalResultados'));
       if (modalResultados) modalResultados.hide();
 
-      const tab = new bootstrap.Tab(document.getElementById('formulario-tab'));
-      tab.show();
-
       mostrarAlerta('📝 Registro cargado correctamente para edición. Verifique los datos y presione ACTUALIZAR.', 'success');
       setTimeout(() => {
         document.getElementById('comparendoForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -915,8 +882,9 @@
         return;
       }
       mostrarAlerta('⏳ Cargando registro...', 'info');
-      google.script.run
-        .withSuccessHandler(function(response) {
+      
+      callGoogleScript('obtenerRegistro', { fila: Number(fila) })
+        .then(response => {
           if (response && response.success && Array.isArray(response.registros)) {
             const registro = response.registros.find(r => Number(r.fila) === Number(fila));
             if (registro) {
@@ -928,10 +896,9 @@
             mostrarAlerta('❌ ' + (response && response.message ? response.message : 'No fue posible cargar el registro.'), 'danger');
           }
         })
-        .withFailureHandler(function(error) {
+        .catch(error => {
           mostrarAlerta('❌ Error de comunicación: ' + error.message, 'danger');
-        })
-        .listarTodosLosRegistros();
+        });
     }
 
     // ============================================================
@@ -939,8 +906,9 @@
     // ============================================================
     function cargarHistorial() {
       document.getElementById('tablaHistorial').innerHTML = `<tr><td colspan="8" class="text-center"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>`;
-      google.script.run
-        .withSuccessHandler(function(response) {
+      
+      callGoogleScript('listarTodos')
+        .then(response => {
           const tbody = document.getElementById('tablaHistorial');
           if (!response || !response.success) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">${response && response.message ? response.message : 'No fue posible cargar el historial.'}</td></tr>`;
@@ -969,10 +937,9 @@
           });
           tbody.innerHTML = html;
         })
-        .withFailureHandler(function(error) {
+        .catch(error => {
           document.getElementById('tablaHistorial').innerHTML = `<tr><td colspan="8" class="text-center text-danger">❌ Error: ${escaparHTML(error.message)}</td></tr>`;
-        })
-        .listarTodosLosRegistros();
+        });
     }
 
     function confirmarEliminar(fila) {
@@ -982,8 +949,9 @@
         const boton = this;
         boton.disabled = true;
         boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Eliminando...';
-        google.script.run
-          .withSuccessHandler(function(response) {
+        
+        callGoogleScript('eliminar', { fila: Number(fila) })
+          .then(response => {
             boton.disabled = false;
             boton.innerHTML = '<i class="bi bi-trash me-1"></i>Eliminar';
             modal.hide();
@@ -994,12 +962,11 @@
               mostrarAlerta('❌ ' + (response && response.message ? response.message : 'No fue posible eliminar el registro.'), 'danger');
             }
           })
-          .withFailureHandler(function(error) {
+          .catch(error => {
             boton.disabled = false;
             boton.innerHTML = '<i class="bi bi-trash me-1"></i>Eliminar';
             mostrarAlerta('❌ Error al eliminar: ' + error.message, 'danger');
-          })
-          .eliminarComparendo(Number(fila));
+          });
       };
     }
 
@@ -1095,4 +1062,5 @@
     document.getElementById('historial-tab').addEventListener('shown.bs.tab', cargarHistorial);
   </script>
 </body>
+  
 </html>

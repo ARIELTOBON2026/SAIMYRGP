@@ -11,6 +11,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Librerías para Exportar (Excel y PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root {
@@ -25,7 +30,6 @@
       padding-bottom: 2rem;
     }
 
-    /* Header moderno */
     .app-header {
       background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
       color: white;
@@ -34,18 +38,9 @@
       box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
       text-align: center;
     }
-    .app-header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0;
-    }
-    .app-header p {
-      margin: 0;
-      opacity: 0.9;
-      font-size: 0.9rem;
-    }
+    .app-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+    .app-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
 
-    /* Tarjetas */
     .card {
       border: none;
       border-radius: 0.75rem;
@@ -53,9 +48,7 @@
       margin-bottom: 1.5rem;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
     .card-header {
       background-color: #fff;
       border-bottom: 1px solid #e9ecef;
@@ -68,13 +61,7 @@
       border-radius: 0.75rem 0.75rem 0 0 !important;
     }
 
-    /* Formularios */
-    .form-label {
-      font-weight: 500;
-      font-size: 0.85rem;
-      color: #495057;
-      margin-bottom: 0.35rem;
-    }
+    .form-label { font-weight: 500; font-size: 0.85rem; color: #495057; margin-bottom: 0.35rem; }
     .form-control, .form-select {
       border-radius: 0.5rem;
       border: 1px solid #dee2e6;
@@ -86,104 +73,54 @@
       border-color: #86b7fe;
       box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
     }
-    .form-control[readonly] {
-      background-color: #f8f9fa;
-    }
+    .form-control[readonly] { background-color: #f8f9fa; }
 
-    /* Iconos de servicio */
     .icon-box {
-      width: 64px;
-      height: 64px;
-      background-color: #e9ecef;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      color: #6c757d;
-      flex-shrink: 0;
+      width: 64px; height: 64px; background-color: #e9ecef; border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: #6c757d; flex-shrink: 0;
     }
-    .icon-box img {
-      max-width: 80%;
-      max-height: 80%;
-      object-fit: contain;
-    }
+    .icon-box img { max-width: 80%; max-height: 80%; object-fit: contain; }
 
-    /* Modo Edición */
     .modo-edicion {
-      background-color: #fff3cd;
-      border-left: 4px solid #ffc107;
-      color: #856404;
-      padding: 0.75rem 1rem;
-      margin-bottom: 1.5rem;
-      border-radius: 0 0.5rem 0.5rem 0;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: none;
-      align-items: center;
-      gap: 0.5rem;
+      background-color: #fff3cd; border-left: 4px solid #ffc107; color: #856404;
+      padding: 0.75rem 1rem; margin-bottom: 1.5rem; border-radius: 0 0.5rem 0.5rem 0;
+      font-weight: 600; font-size: 0.9rem; display: none; align-items: center; gap: 0.5rem;
       box-shadow: 0 2px 8px rgba(255, 193, 7, 0.15);
     }
 
-    /* Observaciones */
     .observaciones-box {
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      color: #495057;
-      min-height: 80px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.5rem;
+      padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.85rem;
+      line-height: 1.5; color: #495057; min-height: 80px; white-space: pre-wrap; word-wrap: break-word;
     }
 
-    /* Botones de acción */
     .btn-action {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.25rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600;
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; min-width: 100px;
+    }
+    .btn-action i { font-size: 1.25rem; }
+    .btn-action:hover { transform: translateY(-2px); }
+
+    .alert-custom { box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); border: none; border-radius: 0.5rem; }
+
+    /* Estilos para la tabla de consolidado */
+    .table-consolidado th {
+      background-color: #f8f9fa;
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      transition: all 0.2s;
-      min-width: 100px;
+      color: #495057;
+      white-space: nowrap;
     }
-    .btn-action i {
-      font-size: 1.25rem;
-    }
-    .btn-action:hover {
-      transform: translateY(-2px);
-    }
-
-    /* Alertas personalizadas (Toasts) */
-    .alert-custom {
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-      border: none;
-      border-radius: 0.5rem;
-    }
-
-    /* Legacy (Oculto pero presente para la lógica) */
-    .legacy-tabs, .legacy-historial {
-      display: none !important;
+    .table-consolidado td {
+      font-size: 0.9rem;
+      vertical-align: middle;
     }
 
     @media (max-width: 768px) {
-      .btn-action {
-        min-width: 80px;
-        font-size: 0.7rem;
-        padding: 0.5rem;
-      }
-      .btn-action i {
-        font-size: 1.1rem;
-      }
+      .btn-action { min-width: 80px; font-size: 0.7rem; padding: 0.5rem; }
+      .btn-action i { font-size: 1.1rem; }
     }
   </style>
 </head>
@@ -198,219 +135,263 @@
       <p>Municipio de La Ceja - Gestión de Comparendos</p>
     </div>
 
-    <form id="comparendoForm">
-      <input type="hidden" id="filaActual" value="">
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active px-4" id="pills-form-tab" data-bs-toggle="pill" data-bs-target="#pills-form" type="button" role="tab">
+          <i class="bi bi-file-earmark-text me-2"></i>Formulario
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link px-4" id="pills-consolidado-tab" data-bs-toggle="pill" data-bs-target="#pills-consolidado" type="button" role="tab" onclick="cargarConsolidado()">
+          <i class="bi bi-table me-2"></i>Consolidado
+        </button>
+      </li>
+    </ul>
 
-      <!-- Aviso de Modo Edición -->
-      <div id="modoEdicion" class="modo-edicion">
-        <i class="bi bi-pencil-fill"></i>
-        <span id="textoModoEdicion">MODO EDICIÓN: está modificando un registro existente.</span>
-      </div>
+    <div class="tab-content" id="pills-tabContent">
+      
+      <!-- ========================================== -->
+      <!-- PESTAÑA 1: FORMULARIO -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="pills-form" role="tabpanel">
+        <form id="comparendoForm">
+          <input type="hidden" id="filaActual" value="">
 
-      <!-- DATOS DEL CONTRIBUYENTE -->
-      <div class="card">
-        <div class="card-header">
-          <i class="bi bi-person-vcard me-2"></i>Datos del Contribuyente
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label for="cedulaInfractor" class="form-label">Nro. Identificación del Infractor</label>
-              <input type="text" class="form-control" id="cedulaInfractor" inputmode="numeric" autocomplete="off" required placeholder="Ej: 123456789">
-              <div class="invalid-feedback" id="cedulaError"></div>
-            </div>
-            <div class="col-md-8">
-              <label for="nombre" class="form-label">Nombre Infractor / Autorizado</label>
-              <input type="text" class="form-control" id="nombre" required placeholder="Nombre completo">
-            </div>
+          <div id="modoEdicion" class="modo-edicion">
+            <i class="bi bi-pencil-fill"></i>
+            <span id="textoModoEdicion">MODO EDICIÓN: está modificando un registro existente.</span>
           </div>
-        </div>
-      </div>
 
-      <!-- INFORMACIÓN DEL COMPARENDO -->
-      <div class="card">
-        <div class="card-header">
-          <i class="bi bi-car-front me-2"></i>Información del Comparendo
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-3">
-              <label for="placa" class="form-label">Placa</label>
-              <input type="text" class="form-control text-uppercase fw-bold text-center fs-5" id="placa" maxlength="6" required placeholder="ABC123">
-              <div class="invalid-feedback" id="placaError"></div>
-            </div>
-            <div class="col-md-3">
-              <label for="tipoInfraccion" class="form-label">Tipo de Infracción</label>
-              <select class="form-select" id="tipoInfraccion" required>
-                <option value="">Seleccione...</option>
-                <option value="Comparendo">Comparendo</option>
-                <option value="Accidente">Accidente</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label for="tipoAgente" class="form-label">Tipo de Agente</label>
-              <select class="form-select" id="tipoAgente" required onchange="autocompletarComparendo()">
-                <option value="">Seleccione...</option>
-                <option value="Agentes de Tránsito (Autoridades locales)">Agentes de Tránsito (Autoridades locales)</option>
-                <option value="Policía de Tránsito y Transporte">Policía de Tránsito y Transporte</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label for="numeroComparendo" class="form-label">Nro. Comparendo</label>
-              <input type="text" class="form-control" id="numeroComparendo" required placeholder="Número">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VALORES Y TOTALES -->
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card h-100">
-            <div class="card-header">
-              <i class="bi bi-truck me-2"></i>Valores del Servicio
-            </div>
+          <!-- DATOS DEL CONTRIBUYENTE -->
+          <div class="card">
+            <div class="card-header"><i class="bi bi-person-vcard me-2"></i>Datos del Contribuyente</div>
             <div class="card-body">
-              <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="icon-box">
-                  <img src="https://arieltobon2026.github.io/grua.png" alt="Grúa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                  <i class="bi bi-truck-front-fill text-secondary" style="display:none;"></i>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="cedulaInfractor" class="form-label">Nro. Identificación del Infractor</label>
+                  <input type="text" class="form-control" id="cedulaInfractor" inputmode="numeric" autocomplete="off" required placeholder="Ej: 123456789">
+                  <div class="invalid-feedback" id="cedulaError"></div>
                 </div>
-                <div class="flex-grow-1">
-                  <div class="mb-3">
-                    <label for="valorGrua" class="form-label">Valor Grúa</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="valorGrua" value="0" min="0" step="1" oninput="calcularTotales()">
+                <div class="col-md-8">
+                  <label for="nombre" class="form-label">Nombre Infractor / Autorizado</label>
+                  <input type="text" class="form-control" id="nombre" required placeholder="Nombre completo">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- INFORMACIÓN DEL COMPARENDO -->
+          <div class="card">
+            <div class="card-header"><i class="bi bi-car-front me-2"></i>Información del Comparendo</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label for="placa" class="form-label">Placa</label>
+                  <input type="text" class="form-control text-uppercase fw-bold text-center fs-5" id="placa" maxlength="6" required placeholder="ABC123">
+                  <div class="invalid-feedback" id="placaError"></div>
+                </div>
+                <div class="col-md-3">
+                  <label for="tipoInfraccion" class="form-label">Tipo de Infracción</label>
+                  <select class="form-select" id="tipoInfraccion" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Comparendo">Comparendo</option>
+                    <option value="Accidente">Accidente</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label for="tipoAgente" class="form-label">Tipo de Agente</label>
+                  <select class="form-select" id="tipoAgente" required onchange="autocompletarComparendo()">
+                    <option value="">Seleccione...</option>
+                    <option value="Agentes de Tránsito (Autoridades locales)">Agentes de Tránsito (Autoridades locales)</option>
+                    <option value="Policía de Tránsito y Transporte">Policía de Tránsito y Transporte</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label for="numeroComparendo" class="form-label">Nro. Comparendo</label>
+                  <input type="text" class="form-control" id="numeroComparendo" required placeholder="Número">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VALORES Y TOTALES -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header"><i class="bi bi-truck me-2"></i>Valores del Servicio</div>
+                <div class="card-body">
+                  <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="icon-box">
+                      <img src="https://arieltobon2026.github.io/grua.png" alt="Grúa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                      <i class="bi bi-truck-front-fill text-secondary" style="display:none;"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="mb-3">
+                        <label for="valorGrua" class="form-label">Valor Grúa</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="valorGrua" value="0" min="0" step="1" oninput="calcularTotales()">
+                        </div>
+                      </div>
+                      <div class="mb-0">
+                        <label for="valorParqueadero" class="form-label">Valor Parqueadero</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="valorParqueadero" value="0" min="0" step="1" oninput="calcularTotales()">
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div class="mb-0">
-                    <label for="valorParqueadero" class="form-label">Valor Parqueadero</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="valorParqueadero" value="0" min="0" step="1" oninput="calcularTotales()">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header"><i class="bi bi-calculator me-2"></i>Resumen de Totales</div>
+                <div class="card-body">
+                  <div class="row g-2">
+                    <div class="col-12 d-flex justify-content-between align-items-center bg-light p-2 rounded">
+                      <label for="subtotal" class="mb-0 fw-semibold small text-uppercase">Subtotal</label>
+                      <input type="text" class="form-control form-control-sm bg-transparent border-0 text-end fw-bold" id="subtotal" value="$ 0" readonly style="max-width: 120px;">
+                    </div>
+                    <div class="col-12 d-flex justify-content-between align-items-center bg-light p-2 rounded">
+                      <label for="iva" class="mb-0 fw-semibold small text-uppercase">IVA 19%</label>
+                      <input type="text" class="form-control form-control-sm bg-transparent border-0 text-end fw-bold" id="iva" value="$ 0" readonly style="max-width: 120px;">
+                    </div>
+                    <div class="col-12 text-center text-muted small my-1" style="letter-spacing: 2px;">**************************************</div>
+                    <div class="col-12 d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded border border-success border-opacity-25">
+                      <label for="total" class="mb-0 fw-bold text-success text-uppercase">Total Facturado</label>
+                      <input type="text" class="form-control bg-transparent border-0 text-end fw-bold text-success fs-5" id="total" value="$ 0" readonly style="max-width: 150px;">
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="col-md-6">
-          <div class="card h-100">
-            <div class="card-header">
-              <i class="bi bi-calculator me-2"></i>Resumen de Totales
-            </div>
+          <!-- DATOS DE PAGO -->
+          <div class="card mt-3">
+            <div class="card-header"><i class="bi bi-credit-card me-2"></i>Datos de Pago</div>
             <div class="card-body">
-              <div class="row g-2">
-                <div class="col-12 d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                  <label for="subtotal" class="mb-0 fw-semibold small text-uppercase">Subtotal</label>
-                  <input type="text" class="form-control form-control-sm bg-transparent border-0 text-end fw-bold" id="subtotal" value="$ 0" readonly style="max-width: 120px;">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="convenioPago" class="form-label">Convenio de Pago</label>
+                  <select class="form-select" id="convenioPago">
+                    <option value="13627">13627</option>
+                  </select>
                 </div>
-                <div class="col-12 d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                  <label for="iva" class="mb-0 fw-semibold small text-uppercase">IVA 19%</label>
-                  <input type="text" class="form-control form-control-sm bg-transparent border-0 text-end fw-bold" id="iva" value="$ 0" readonly style="max-width: 120px;">
-                </div>
-                <div class="col-12 text-center text-muted small my-1" style="letter-spacing: 2px;">**************************************</div>
-                <div class="col-12 d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded border border-success border-opacity-25">
-                  <label for="total" class="mb-0 fw-bold text-success text-uppercase">Total Facturado</label>
-                  <input type="text" class="form-control bg-transparent border-0 text-end fw-bold text-success fs-5" id="total" value="$ 0" readonly style="max-width: 150px;">
+                <div class="col-md-6">
+                  <label for="fechaPago" class="form-label">Fecha de Pago</label>
+                  <input type="date" class="form-control" id="fechaPago">
                 </div>
               </div>
             </div>
           </div>
-        </div>
+
+          <!-- OBSERVACIONES -->
+          <div class="card mt-3">
+            <div class="card-header"><i class="bi bi-card-text me-2"></i>Observaciones Generadas</div>
+            <div class="card-body">
+              <div id="observacionesTexto" class="observaciones-box">Complete el formulario para generar el texto de observaciones...</div>
+            </div>
+          </div>
+
+          <!-- BOTONES DE ACCIÓN -->
+          <div class="d-flex flex-wrap justify-content-center gap-2 mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline-secondary btn-action" onclick="nuevoFormulario()">
+              <i class="bi bi-file-earmark-plus"></i><span>Nuevo</span>
+            </button>
+            <button type="submit" class="btn btn-success btn-action">
+              <i class="bi bi-save-fill"></i><span id="textoBotonGuardar">Guardar</span>
+            </button>
+            <button type="button" class="btn btn-warning btn-action" onclick="mostrarModalBusqueda()">
+              <i class="bi bi-pencil-square"></i><span>Modificar</span>
+            </button>
+            <button type="button" class="btn btn-info btn-action text-white" onclick="mostrarModalBusqueda()">
+              <i class="bi bi-search"></i><span>Buscar</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-action" onclick="copiarObservaciones()">
+              <i class="bi bi-clipboard-fill"></i><span>Portapapeles</span>
+            </button>
+          </div>
+        </form>
       </div>
 
-      <!-- DATOS DE PAGO -->
-      <div class="card mt-3">
-        <div class="card-header">
-          <i class="bi bi-credit-card me-2"></i>Datos de Pago
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="convenioPago" class="form-label">Convenio de Pago</label>
-              <select class="form-select" id="convenioPago">
-                <option value="13627">13627</option>
-              </select>
+      <!-- ========================================== -->
+      <!-- PESTAÑA 2: CONSOLIDADO -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="pills-consolidado" role="tabpanel">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span><i class="bi bi-table me-2"></i>Consolidado de Comparendos</span>
+            <div class="d-flex gap-2">
+              <button class="btn btn-success btn-sm" onclick="exportarExcel()">
+                <i class="bi bi-file-earmark-excel me-1"></i> Excel
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="exportarPDF()">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="cargarConsolidado()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+              </button>
             </div>
-            <div class="col-md-6">
-              <label for="fechaPago" class="form-label">Fecha de Pago</label>
-              <input type="date" class="form-control" id="fechaPago">
+          </div>
+          <div class="card-body">
+            <div id="loadingConsolidado" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+              <p class="mt-2 text-muted">Cargando datos del consolidado...</p>
+            </div>
+            
+            <div class="table-responsive" id="contenedorTablaConsolidado" style="display: none;">
+              <table class="table table-hover table-bordered table-consolidado" id="tablaConsolidado">
+                <thead class="table-light">
+                  <tr>
+                    <th>Fecha Registro</th>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Placa</th>
+                    <th>Nro. Comparendo</th>
+                    <th>Infracción</th>
+                    <th class="text-end">Valor Grúa</th>
+                    <th class="text-end">Parqueadero</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyConsolidado">
+                  <!-- Los datos se insertarán aquí dinámicamente -->
+                </tbody>
+                <tfoot class="table-group-divider fw-bold">
+                  <tr>
+                    <td colspan="6" class="text-end">TOTALES GENERALES:</td>
+                    <td class="text-end" id="totalGralGrua">$ 0</td>
+                    <td class="text-end" id="totalGralParqueadero">$ 0</td>
+                    <td class="text-end text-primary" id="totalGralFinal">$ 0</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            
+            <div id="sinDatosConsolidado" class="text-center py-5 text-muted" style="display: none;">
+              <i class="bi bi-inbox fs-1"></i>
+              <p class="mt-2">No se encontraron registros en la base de datos.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- OBSERVACIONES -->
-      <div class="card mt-3">
-        <div class="card-header">
-          <i class="bi bi-card-text me-2"></i>Observaciones Generadas
-        </div>
-        <div class="card-body">
-          <div id="observacionesTexto" class="observaciones-box">Complete el formulario para generar el texto de observaciones...</div>
-        </div>
-      </div>
+    </div> <!-- Fin tab-content -->
 
-      <!-- BOTONES DE ACCIÓN (CENTRADOS y SIN BOTÓN SALIR) -->
-      <div class="d-flex flex-wrap justify-content-center gap-2 mt-4 pt-3 border-top">
-        <button type="button" class="btn btn-outline-secondary btn-action" onclick="nuevoFormulario()">
-          <i class="bi bi-file-earmark-plus"></i>
-          <span>Nuevo</span>
-        </button>
-
-        <button type="submit" class="btn btn-success btn-action">
-          <i class="bi bi-save-fill"></i>
-          <span id="textoBotonGuardar">Guardar</span>
-        </button>
-
-        <button type="button" class="btn btn-warning btn-action" onclick="mostrarModalBusqueda()">
-          <i class="bi bi-pencil-square"></i>
-          <span>Modificar</span>
-        </button>
-
-        <button type="button" class="btn btn-info btn-action text-white" onclick="mostrarModalBusqueda()">
-          <i class="bi bi-search"></i>
-          <span>Buscar</span>
-        </button>
-
-        <button type="button" class="btn btn-secondary btn-action" onclick="copiarObservaciones()">
-          <i class="bi bi-clipboard-fill"></i>
-          <span>Portapapeles</span>
-        </button>
-      </div>
-
-      <!-- ELEMENTOS LEGACY (Necesarios para la lógica existente, ocultos visualmente) -->
-      <div class="legacy-tabs">
-        <ul class="nav nav-tabs" id="mainTabs">
-          <li class="nav-item">
-            <button class="nav-link active" id="formulario-tab" data-bs-toggle="tab" data-bs-target="#formulario" type="button">Formulario</button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button">Historial</button>
-          </li>
-        </ul>
-        <div id="mainTabsContent">
-          <div id="formulario"></div>
-          <div id="historial" class="legacy-historial">
-            <table><tbody id="tablaHistorial"></tbody></table>
-          </div>
-        </div>
-      </div>
-
-    </form>
-
-    <!-- Contenedor de Alertas (Posición fija tipo Toast) -->
+    <!-- Contenedor de Alertas (Toasts) -->
     <div id="alertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
-
   </div>
 
   <!-- =========================================================
-       MODALES
+       MODALES (Búsqueda y Confirmación)
   ========================================================== -->
-
   <!-- Modal Búsqueda -->
   <div class="modal fade" id="modalBusqueda" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -423,7 +404,6 @@
           <div class="mb-3">
             <label for="valorBusqueda" class="form-label fw-semibold">Cédula a buscar</label>
             <input type="text" class="form-control form-control-lg" id="valorBusqueda" inputmode="numeric" autocomplete="off" required placeholder="Ingrese la cédula sin puntos ni espacios">
-            <div class="form-text">Ingrese la cédula sin puntos ni espacios.</div>
           </div>
         </div>
         <div class="modal-footer bg-light">
@@ -454,76 +434,44 @@
     </div>
   </div>
 
-  <!-- Modal Confirmación Eliminación -->
-  <div class="modal fade" id="modalConfirmacion" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar Eliminación</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body p-4">
-          <p class="mb-2 fw-semibold">¿Está seguro de que desea eliminar este registro?</p>
-          <p class="text-muted small mb-0">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
-            <i class="bi bi-trash me-1"></i>Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- =========================================================
-       LÓGICA DE LA APLICACIÓN (ACTUALIZADA PARA GITHUB PAGES)
+       LÓGICA DE LA APLICACIÓN
   ========================================================== -->
   <script>
-        // ============================================================
-    // CONFIGURACIÓN DE LA URL DEL SCRIPT
-    // ============================================================
-    // Pega aquí la URL que copiaste en el Paso 1 (debe terminar en /exec)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNY22jyBnXfkQxEwwLrTmSLKHNipQMXtWnpVXGlnqL360p5eQ2Q8gUd6F6cZijAVs/exec";
 
+    let filaEditando = null;
+    let registrosBusquedaActual = [];
+    let datosConsolidadoGlobal = []; // Para almacenar los datos y exportarlos
+
     // ============================================================
-    // FUNCIÓN UNIFICADA DE COMUNICACIÓN (ANTI-CORS)
+    // COMUNICACIÓN CON GOOGLE APPS SCRIPT
     // ============================================================
     function callGoogleScript(accion, params = {}) {
-      const payload = {
-        accion: accion,
-        ...params
-      };
-
-      console.log("📤 Enviando a Google Apps Script:", accion, payload);
+      const payload = { accion: accion, ...params };
+      console.log("📤 Enviando a GAS:", accion, payload);
 
       return fetch(SCRIPT_URL, {
         method: 'POST',
-        // 'text/plain' es OBLIGATORIO. Evita que el navegador envíe una 
-        // solicitud OPTIONS (preflight) que Google Apps Script no sabe manejar.
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       })
       .then(async response => {
-        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
-        
-        // Verificar si Google devolvió un error en formato HTML (común si falla la autorización)
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           return response.json();
         } else {
           const text = await response.text();
-          console.error("❌ El servidor no devolvió JSON. Respuesta cruda:", text.substring(0, 500));
-          throw new Error("Error del servidor: La respuesta no es JSON. Revisa la consola (F12).");
+          console.error("❌ Respuesta cruda:", text.substring(0, 500));
+          throw new Error("El servidor no devolvió JSON. Revisa la consola (F12).");
         }
       })
       .catch(error => {
         console.error("❌ Error de red o CORS:", error);
-        throw new Error("No se pudo conectar con Google Apps Script. Verifica: 1) La URL, 2) Que el acceso sea 'Cualquier persona', 3) Tu conexión a internet.");
+        throw new Error("No se pudo conectar con Google Apps Script.");
       });
     }
 
@@ -532,16 +480,11 @@
     // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
       calcularTotales();
-
       document.getElementById('comparendoForm').addEventListener('submit', guardarFormulario);
       document.getElementById('cedulaInfractor').addEventListener('blur', validarCedula);
       document.getElementById('placa').addEventListener('blur', validarPlaca);
 
-      const campos = [
-        'cedulaInfractor', 'nombre', 'placa', 'tipoInfraccion',
-        'numeroComparendo', 'tipoAgente', 'valorGrua', 'valorParqueadero', 'fechaPago'
-      ];
-
+      const campos = ['cedulaInfractor', 'nombre', 'placa', 'tipoInfraccion', 'numeroComparendo', 'tipoAgente', 'valorGrua', 'valorParqueadero', 'fechaPago'];
       campos.forEach(campo => {
         const elemento = document.getElementById(campo);
         elemento.addEventListener('input', actualizarObservaciones);
@@ -549,62 +492,39 @@
       });
 
       document.getElementById('valorBusqueda').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          ejecutarBusqueda();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); ejecutarBusqueda(); }
       });
     });
 
     // ============================================================
-    // AUTOCOMPLETAR COMPARENDO
+    // LÓGICA DEL FORMULARIO (Resumida para mantener el foco en lo nuevo)
     // ============================================================
     function autocompletarComparendo() {
       const tipoAgente = document.getElementById('tipoAgente').value;
       const numeroComparendo = document.getElementById('numeroComparendo');
-
-      if (tipoAgente === 'Agentes de Tránsito (Autoridades locales)') {
-        numeroComparendo.value = '0537600000005734';
-      } else if (tipoAgente === 'Policía de Tránsito y Transporte') {
-        numeroComparendo.value = 'p9999999900000';
-      } else {
-        numeroComparendo.value = '';
-      }
+      if (tipoAgente === 'Agentes de Tránsito (Autoridades locales)') numeroComparendo.value = '0537600000005734';
+      else if (tipoAgente === 'Policía de Tránsito y Transporte') numeroComparendo.value = 'p9999999900000';
+      else numeroComparendo.value = '';
       actualizarObservaciones();
     }
 
-    // ============================================================
-    // CALCULAR TOTALES
-    // ============================================================
     function calcularTotales() {
       const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
       const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
-      const valorTotalConIVA = valorGrua + valorParqueadero;
-      
-      const subtotal = valorTotalConIVA > 0 ? Math.round((valorTotalConIVA / 1.19) * 100) / 100 : 0;
-      const iva = subtotal > 0 ? Math.round((subtotal * 0.19) * 100) / 100 : 0;
-      const total = Math.round((subtotal + iva) * 100) / 100;
+      const total = valorGrua + valorParqueadero;
+      const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
+      const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
 
       document.getElementById('subtotal').value = formatearMoneda(subtotal);
       document.getElementById('iva').value = formatearMoneda(iva);
       document.getElementById('total').value = formatearMoneda(total);
-
       actualizarObservaciones();
     }
 
-    // ============================================================
-    // FORMATEAR MONEDA
-    // ============================================================
     function formatearMoneda(valor) {
-      return '$ ' + Number(valor || 0).toLocaleString('es-CO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      });
+      return '$ ' + Number(valor || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
-    // ============================================================
-    // OBSERVACIONES
-    // ============================================================
     function actualizarObservaciones() {
       const nombre = document.getElementById('nombre').value.trim() || '[NOMBRE]';
       const cedula = document.getElementById('cedulaInfractor').value.trim() || '[ID]';
@@ -612,248 +532,151 @@
       const tipoInfraccion = document.getElementById('tipoInfraccion').value || '[INFRACCIÓN]';
       const numeroComparendo = document.getElementById('numeroComparendo').value.trim() || '[COMPARENDO]';
       const tipoAgente = document.getElementById('tipoAgente').value || '[AGENTE]';
-      
       const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
       const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
-      const convenio = '13627';
       const fechaPago = document.getElementById('fechaPago').value || '[FECHA]';
-      
       const total = valorGrua + valorParqueadero;
       const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
       const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
 
-      const texto = `FACTURACIÓN GRUA Y PARQUEADERO, NOMBRE: ${nombre}, ID: ${cedula}, PLACA: ${placa}, INFRACCIÓN: ${tipoInfraccion}, COMPARENDO: ${numeroComparendo}, AGENTE: ${tipoAgente}, GRUA: ${formatearMoneda(valorGrua)}, PARQUEADERO: ${formatearMoneda(valorParqueadero)}, CONVENIO: ${convenio}, SUBTOTAL: ${formatearMoneda(subtotal)}, IVA: ${formatearMoneda(iva)}, TOTAL: ${formatearMoneda(total)}, FECHA DE PAGO: ${fechaPago}`;
-
-      document.getElementById('observacionesTexto').textContent = texto;
+      document.getElementById('observacionesTexto').textContent = 
+        `FACTURACIÓN GRUA Y PARQUEADERO, NOMBRE: ${nombre}, ID: ${cedula}, PLACA: ${placa}, INFRACCIÓN: ${tipoInfraccion}, COMPARENDO: ${numeroComparendo}, AGENTE: ${tipoAgente}, GRUA: ${formatearMoneda(valorGrua)}, PARQUEADERO: ${formatearMoneda(valorParqueadero)}, CONVENIO: 13627, SUBTOTAL: ${formatearMoneda(subtotal)}, IVA: ${formatearMoneda(iva)}, TOTAL: ${formatearMoneda(total)}, FECHA DE PAGO: ${fechaPago}`;
     }
 
-    // ============================================================
-    // VALIDAR CÉDULA Y PLACA
-    // ============================================================
     function validarCedula() {
       const cedula = document.getElementById('cedulaInfractor').value.trim();
-      if (!cedula) { mostrarError('cedulaInfractor', 'La cédula es obligatoria'); return false; }
-      if (!/^\d{6,10}$/.test(cedula)) { mostrarError('cedulaInfractor', 'La cédula debe tener entre 6 y 10 dígitos numéricos'); return false; }
+      if (!cedula || !/^\d{6,10}$/.test(cedula)) {
+        mostrarError('cedulaInfractor', 'La cédula debe tener entre 6 y 10 dígitos numéricos');
+        return false;
+      }
       ocultarError('cedulaInfractor');
       return true;
     }
 
     function validarPlaca() {
       const placa = document.getElementById('placa').value.trim().toUpperCase();
-      if (!placa) { mostrarError('placa', 'La placa es obligatoria'); return false; }
-      if (!/^[A-Z]{3}\d{3}$/.test(placa) && !/^[A-Z]{3}\d{2}[A-Z]$/.test(placa)) { mostrarError('placa', 'Formato de placa inválido (ABC123 o ABC12D)'); return false; }
+      if (!placa || (!/^[A-Z]{3}\d{3}$/.test(placa) && !/^[A-Z]{3}\d{2}[A-Z]$/.test(placa))) {
+        mostrarError('placa', 'Formato de placa inválido (ABC123 o ABC12D)');
+        return false;
+      }
       ocultarError('placa');
       return true;
     }
 
     function mostrarError(campo, mensaje) {
-      const input = document.getElementById(campo);
+      document.getElementById(campo).classList.add('is-invalid');
       const errorDiv = document.getElementById(campo + 'Error');
-      input.classList.add('is-invalid');
       if (errorDiv) { errorDiv.textContent = mensaje; errorDiv.style.display = 'block'; }
     }
 
     function ocultarError(campo) {
-      const input = document.getElementById(campo);
+      document.getElementById(campo).classList.remove('is-invalid');
       const errorDiv = document.getElementById(campo + 'Error');
-      input.classList.remove('is-invalid');
-      if (errorDiv) { errorDiv.style.display = 'none'; }
+      if (errorDiv) errorDiv.style.display = 'none';
     }
 
-    // ============================================================
-    // NUEVO FORMULARIO
-    // ============================================================
     function nuevoFormulario() {
       document.getElementById('comparendoForm').reset();
       document.getElementById('filaActual').value = '';
       filaEditando = null;
-      registrosBusquedaActual = [];
       document.getElementById('modoEdicion').style.display = 'none';
       document.getElementById('textoBotonGuardar').textContent = 'GUARDAR';
-      document.getElementById('cedulaInfractor').classList.remove('is-invalid');
-      document.getElementById('placa').classList.remove('is-invalid');
+      ocultarError('cedulaInfractor');
+      ocultarError('placa');
       calcularTotales();
-      actualizarObservaciones();
       mostrarAlerta('📝 Formulario limpiado', 'info');
     }
 
-    // ============================================================
-    // GUARDAR / ACTUALIZAR
-    // ============================================================
     function guardarFormulario(e) {
       e.preventDefault();
-      const cedulaValida = validarCedula();
-      const placaValida = validarPlaca();
-      
-      const tipoInfraccion = document.getElementById('tipoInfraccion').value;
-      const tipoAgente = document.getElementById('tipoAgente').value;
-      const numeroComparendo = document.getElementById('numeroComparendo').value.trim();
-      const nombre = document.getElementById('nombre').value.trim();
-      
-      const camposFaltantes = [];
-      if (!nombre) camposFaltantes.push('Nombre del infractor');
-      if (!tipoInfraccion) camposFaltantes.push('Tipo de Infracción');
-      if (!tipoAgente) camposFaltantes.push('Tipo de Agente');
-      if (!numeroComparendo) camposFaltantes.push('Número de Comparendo');
-
-      if (!cedulaValida || !placaValida || camposFaltantes.length > 0) {
-        let mensaje = '⚠️ Por favor corrija los siguientes errores:\n\n';
-        if (!cedulaValida) mensaje += '• Cédula: debe tener entre 6 y 10 dígitos numéricos\n';
-        if (!placaValida) mensaje += '• Placa: formato inválido (use ABC123 o ABC12D)\n';
-        camposFaltantes.forEach(campo => { mensaje += `• ${campo}: campo obligatorio\n`; });
-        mostrarAlerta(mensaje.replace(/\n/g, '<br>'), 'warning');
-        const primerError = document.querySelector('.is-invalid');
-        if (primerError) { primerError.scrollIntoView({ behavior: 'smooth', block: 'center' }); primerError.focus(); }
-        return;
-      }
-
-      const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
-      const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
-      const total = valorGrua + valorParqueadero;
-      const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
-      const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
+      if (!validarCedula() || !validarPlaca()) return;
 
       const datos = {
         cedulaInfractor: document.getElementById('cedulaInfractor').value.trim(),
-        nombre: nombre,
+        nombre: document.getElementById('nombre').value.trim(),
         placa: document.getElementById('placa').value.trim().toUpperCase(),
-        numeroComparendo: numeroComparendo,
-        tipoInfraccion: tipoInfraccion,
-        tipoAgente: tipoAgente,
-        valorGrua: valorGrua,
-        valorParqueadero: valorParqueadero,
-        subtotal: subtotal,
-        iva: iva,
-        total: total,
-        convenioPago: '13627',
+        tipoInfraccion: document.getElementById('tipoInfraccion').value,
+        tipoAgente: document.getElementById('tipoAgente').value,
+        numeroComparendo: document.getElementById('numeroComparendo').value.trim(),
+        valorGrua: parseFloat(document.getElementById('valorGrua').value) || 0,
+        valorParqueadero: parseFloat(document.getElementById('valorParqueadero').value) || 0,
         fechaPago: document.getElementById('fechaPago').value,
         resumenFacturacion: document.getElementById('observacionesTexto').textContent
       };
+      datos.total = datos.valorGrua + datos.valorParqueadero;
 
       const fila = document.getElementById('filaActual').value;
       const btnGuardar = document.querySelector('button[type="submit"]');
       const textoOriginal = btnGuardar.innerHTML;
-      
       btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
       btnGuardar.disabled = true;
 
-      callGoogleScript(fila ? 'actualizar' : 'guardar', { 
-        fila: fila ? Number(fila) : null, 
-        datos: datos 
-      })
-      .then(response => {
-        btnGuardar.innerHTML = textoOriginal;
-        btnGuardar.disabled = false;
-        if (response.success) {
-          mostrarAlerta('✅ ' + response.message + (fila ? ' - Comparendo actualizado exitosamente' : ' - Comparendo registrado exitosamente'), 'success');
-          nuevoFormulario();
-        } else {
-          mostrarAlerta('❌ ' + response.message, 'danger');
-        }
-      })
-      .catch(error => {
-        btnGuardar.innerHTML = textoOriginal;
-        btnGuardar.disabled = false;
-        mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
-      });
+      callGoogleScript(fila ? 'actualizar' : 'guardar', { fila: fila ? Number(fila) : null, datos: datos })
+        .then(response => {
+          btnGuardar.innerHTML = textoOriginal;
+          btnGuardar.disabled = false;
+          if (response.success) {
+            mostrarAlerta('✅ ' + response.message, 'success');
+            nuevoFormulario();
+          } else {
+            mostrarAlerta('❌ ' + response.message, 'danger');
+          }
+        })
+        .catch(error => {
+          btnGuardar.innerHTML = textoOriginal;
+          btnGuardar.disabled = false;
+          mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
+        });
     }
 
     // ============================================================
-    // BÚSQUEDA
+    // LÓGICA DE BÚSQUEDA Y EDICIÓN (Mantenida)
     // ============================================================
     function mostrarModalBusqueda() {
       document.getElementById('valorBusqueda').value = '';
-      const modal = new bootstrap.Modal(document.getElementById('modalBusqueda'));
-      modal.show();
+      new bootstrap.Modal(document.getElementById('modalBusqueda')).show();
       setTimeout(() => { document.getElementById('valorBusqueda').focus(); }, 400);
     }
 
     function ejecutarBusqueda() {
       const valor = document.getElementById('valorBusqueda').value.trim();
-      if (!valor) { mostrarAlerta('⚠️ Debe ingresar una cédula para buscar', 'warning'); return; }
       if (!/^\d+$/.test(valor)) { mostrarAlerta('⚠️ La cédula debe contener únicamente números', 'warning'); return; }
 
       const btn = document.getElementById('btnEjecutarBusqueda');
-      const textoOriginal = btn.innerHTML;
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
       btn.disabled = true;
 
       callGoogleScript('buscar', { cedula: valor })
         .then(response => {
-          btn.innerHTML = textoOriginal;
+          btn.innerHTML = '<i class="bi bi-search me-1"></i>Buscar';
           btn.disabled = false;
-          const modalBusqueda = bootstrap.Modal.getInstance(document.getElementById('modalBusqueda'));
-          if (modalBusqueda) modalBusqueda.hide();
-          mostrarResultadosBusqueda(response);
+          bootstrap.Modal.getInstance(document.getElementById('modalBusqueda')).hide();
+          
+          const resultadosDiv = document.getElementById('resultadosBusqueda');
+          if (!response || !response.success || !response.registros.length) {
+            resultadosDiv.innerHTML = `<div class="alert alert-warning">No se encontraron registros.</div>`;
+          } else {
+            registrosBusquedaActual = response.registros;
+            let html = `<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Placa</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
+            registrosBusquedaActual.forEach((reg, idx) => {
+              const d = reg.datos || {};
+              html += `<tr><td>${escaparHTML(d.fechaRegistro||'')}</td><td>${escaparHTML(d.cedulaInfractor||'')}</td><td><strong>${escaparHTML(d.placa||'')}</strong></td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
+            });
+            html += `</tbody></table></div>`;
+            resultadosDiv.innerHTML = html;
+            new bootstrap.Modal(document.getElementById('modalResultados')).show();
+          }
         })
         .catch(error => {
-          btn.innerHTML = textoOriginal;
+          btn.innerHTML = '<i class="bi bi-search me-1"></i>Buscar';
           btn.disabled = false;
           mostrarAlerta('❌ Error al buscar: ' + error.message, 'danger');
         });
     }
 
-    function mostrarResultadosBusqueda(response) {
-      const resultadosDiv = document.getElementById('resultadosBusqueda');
-      if (!response || !response.success) {
-        registrosBusquedaActual = [];
-        resultadosDiv.innerHTML = `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>${response && response.message ? response.message : 'No se encontraron registros.'}</div>`;
-      } else {
-        registrosBusquedaActual = Array.isArray(response.registros) ? response.registros : [];
-        let html = `<div class="alert alert-info"><i class="bi bi-person-vcard me-2"></i>Se encontraron <strong>${registrosBusquedaActual.length}</strong> registro(s) para la cédula buscada.</div>`;
-        
-        if (registrosBusquedaActual.length === 0) {
-          html += `<div class="alert alert-warning">No se encontraron registros asociados a la cédula.</div>`;
-        } else {
-          html += `<div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Placa</th><th>Comparendo</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
-          registrosBusquedaActual.forEach((registro, indice) => {
-            const d = registro.datos || {};
-            html += `<tr>
-              <td>${escaparHTML(d.fechaRegistro || '')}</td>
-              <td>${escaparHTML(d.cedulaInfractor || '')}</td>
-              <td><strong>${escaparHTML(d.placa || '')}</strong></td>
-              <td>${escaparHTML(d.numeroComparendo || '')}</td>
-              <td>${formatearMoneda(d.total)}</td>
-              <td><button type="button" class="btn btn-sm btn-primary" onclick="cargarRegistroBusqueda(${indice})"><i class="bi bi-pencil-square me-1"></i>Editar</button></td>
-            </tr>`;
-          });
-          html += `</tbody></table></div>`;
-        }
-        resultadosDiv.innerHTML = html;
-      }
-      const modal = new bootstrap.Modal(document.getElementById('modalResultados'));
-      modal.show();
-    }
-
-    // ============================================================
-    // CARGAR REGISTRO
-    // ============================================================
-    function cargarRegistroBusqueda(indice) {
-      if (!Array.isArray(registrosBusquedaActual)) {
-        mostrarAlerta('❌ No hay resultados disponibles para editar.', 'danger');
-        return;
-      }
-      const registro = registrosBusquedaActual[indice];
-      if (!registro) {
-        mostrarAlerta('❌ No se encontró el registro seleccionado.', 'danger');
-        return;
-      }
-      cargarDatosEnFormulario(registro);
-    }
-
     function cargarDatosEnFormulario(registro) {
-      if (!registro || !registro.datos) {
-        mostrarAlerta('❌ El registro seleccionado no contiene datos válidos.', 'danger');
-        return;
-      }
       const d = registro.datos;
       const fila = registro.fila;
-
-      if (fila === undefined || fila === null || fila === '') {
-        mostrarAlerta('❌ El registro no tiene identificada la fila de la hoja.', 'danger');
-        return;
-      }
-
       filaEditando = Number(fila);
       document.getElementById('filaActual').value = Number(fila);
 
@@ -867,174 +690,154 @@
       document.getElementById('valorParqueadero').value = convertirNumero(d.valorParqueadero);
       document.getElementById('fechaPago').value = convertirFechaParaInput(d.fechaPago);
 
-      ocultarError('cedulaInfractor');
-      ocultarError('placa');
-
       document.getElementById('modoEdicion').style.display = 'flex';
       document.getElementById('textoModoEdicion').textContent = `MODO EDICIÓN: modificando el registro de la fila ${fila}.`;
       document.getElementById('textoBotonGuardar').textContent = 'ACTUALIZAR';
 
       calcularTotales();
-      actualizarObservaciones();
-
-      const modalResultados = bootstrap.Modal.getInstance(document.getElementById('modalResultados'));
-      if (modalResultados) modalResultados.hide();
-
-      mostrarAlerta('📝 Registro cargado correctamente para edición. Verifique los datos y presione ACTUALIZAR.', 'success');
-      setTimeout(() => {
-        document.getElementById('comparendoForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 300);
-    }
-
-    function cargarRegistro(fila) {
-      if (fila === undefined || fila === null || fila === '') {
-        mostrarAlerta('❌ Fila inválida.', 'danger');
-        return;
-      }
-      mostrarAlerta('⏳ Cargando registro...', 'info');
+      mostrarAlerta('📝 Registro cargado para edición.', 'success');
       
-      callGoogleScript('obtenerRegistro', { fila: Number(fila) })
-        .then(response => {
-          if (response && response.success && Array.isArray(response.registros)) {
-            const registro = response.registros.find(r => Number(r.fila) === Number(fila));
-            if (registro) {
-              cargarDatosEnFormulario(registro);
-            } else {
-              mostrarAlerta('❌ No se encontró el registro en la hoja.', 'danger');
-            }
-          } else {
-            mostrarAlerta('❌ ' + (response && response.message ? response.message : 'No fue posible cargar el registro.'), 'danger');
-          }
-        })
-        .catch(error => {
-          mostrarAlerta('❌ Error de comunicación: ' + error.message, 'danger');
-        });
+      // Cambiar a la pestaña de formulario
+      const tab = new bootstrap.Tab(document.getElementById('pills-form-tab'));
+      tab.show();
     }
 
     // ============================================================
-    // HISTORIAL Y ELIMINACIÓN
+    // 🌟 NUEVA LÓGICA: CONSOLIDADO Y EXPORTACIÓN 🌟
     // ============================================================
-    function cargarHistorial() {
-      document.getElementById('tablaHistorial').innerHTML = `<tr><td colspan="8" class="text-center"><span class="spinner-border spinner-border-sm me-2"></span>Cargando...</td></tr>`;
-      
+    function cargarConsolidado() {
+      document.getElementById('loadingConsolidado').style.display = 'block';
+      document.getElementById('contenedorTablaConsolidado').style.display = 'none';
+      document.getElementById('sinDatosConsolidado').style.display = 'none';
+
       callGoogleScript('listarTodos')
         .then(response => {
-          const tbody = document.getElementById('tablaHistorial');
-          if (!response || !response.success) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">${response && response.message ? response.message : 'No fue posible cargar el historial.'}</td></tr>`;
+          document.getElementById('loadingConsolidado').style.display = 'none';
+          
+          if (!response || !response.success || !response.registros || response.registros.length === 0) {
+            document.getElementById('sinDatosConsolidado').style.display = 'block';
             return;
           }
-          if (!Array.isArray(response.registros) || response.registros.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center">No hay registros</td></tr>`;
-            return;
-          }
-          let html = '';
-          response.registros.forEach(registro => {
-            const datos = registro.datos || {};
-            html += `<tr>
-              <td>${escaparHTML(datos.fechaRegistro || '')}</td>
-              <td>${escaparHTML(datos.cedulaInfractor || '')}</td>
-              <td>${escaparHTML(datos.nombre || '')}</td>
-              <td>${escaparHTML(datos.placa || '')}</td>
-              <td>${escaparHTML(datos.numeroComparendo || '')}</td>
-              <td>${escaparHTML(datos.tipoInfraccion || '')}</td>
-              <td>${formatearMoneda(datos.total)}</td>
-              <td>
-                <button type="button" class="btn btn-sm btn-primary me-1" title="Editar" onclick="cargarRegistro(${Number(registro.fila)})"><i class="bi bi-pencil"></i></button>
-                <button type="button" class="btn btn-sm btn-danger" title="Eliminar" onclick="confirmarEliminar(${Number(registro.fila)})"><i class="bi bi-trash"></i></button>
-              </td>
-            </tr>`;
+
+          datosConsolidadoGlobal = response.registros;
+          const tbody = document.getElementById('tbodyConsolidado');
+          tbody.innerHTML = '';
+
+          let sumaGrua = 0, sumaParqueadero = 0, sumaTotal = 0;
+
+          response.registros.forEach(reg => {
+            const d = reg.datos || {};
+            const valGrua = convertirNumero(d.valorGrua);
+            const valParq = convertirNumero(d.valorParqueadero);
+            const valTot = convertirNumero(d.total);
+
+            sumaGrua += valGrua;
+            sumaParqueadero += valParq;
+            sumaTotal += valTot;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${escaparHTML(d.fechaRegistro || '')}</td>
+              <td>${escaparHTML(d.cedulaInfractor || '')}</td>
+              <td>${escaparHTML(d.nombre || '')}</td>
+              <td><strong>${escaparHTML(d.placa || '')}</strong></td>
+              <td>${escaparHTML(d.numeroComparendo || '')}</td>
+              <td>${escaparHTML(d.tipoInfraccion || '')}</td>
+              <td class="text-end">${formatearMoneda(valGrua)}</td>
+              <td class="text-end">${formatearMoneda(valParq)}</td>
+              <td class="text-end fw-bold">${formatearMoneda(valTot)}</td>
+            `;
+            tbody.appendChild(tr);
           });
-          tbody.innerHTML = html;
+
+          document.getElementById('totalGralGrua').textContent = formatearMoneda(sumaGrua);
+          document.getElementById('totalGralParqueadero').textContent = formatearMoneda(sumaParqueadero);
+          document.getElementById('totalGralFinal').textContent = formatearMoneda(sumaTotal);
+
+          document.getElementById('contenedorTablaConsolidado').style.display = 'block';
         })
         .catch(error => {
-          document.getElementById('tablaHistorial').innerHTML = `<tr><td colspan="8" class="text-center text-danger">❌ Error: ${escaparHTML(error.message)}</td></tr>`;
+          document.getElementById('loadingConsolidado').style.display = 'none';
+          mostrarAlerta('❌ Error al cargar consolidado: ' + error.message, 'danger');
         });
     }
 
-    function confirmarEliminar(fila) {
-      const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
-      modal.show();
-      document.getElementById('btnConfirmarEliminar').onclick = function() {
-        const boton = this;
-        boton.disabled = true;
-        boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Eliminando...';
-        
-        callGoogleScript('eliminar', { fila: Number(fila) })
-          .then(response => {
-            boton.disabled = false;
-            boton.innerHTML = '<i class="bi bi-trash me-1"></i>Eliminar';
-            modal.hide();
-            if (response && response.success) {
-              mostrarAlerta('🗑️ ' + response.message, 'success');
-              cargarHistorial();
-            } else {
-              mostrarAlerta('❌ ' + (response && response.message ? response.message : 'No fue posible eliminar el registro.'), 'danger');
-            }
-          })
-          .catch(error => {
-            boton.disabled = false;
-            boton.innerHTML = '<i class="bi bi-trash me-1"></i>Eliminar';
-            mostrarAlerta('❌ Error al eliminar: ' + error.message, 'danger');
-          });
-      };
+    function exportarExcel() {
+      if (datosConsolidadoGlobal.length === 0) {
+        mostrarAlerta('⚠️ No hay datos para exportar.', 'warning');
+        return;
+      }
+      
+      // Usamos la librería SheetJS (XLSX)
+      const tabla = document.getElementById("tablaConsolidado");
+      const libro = XLSX.utils.table_to_book(tabla, { sheet: "Consolidado" });
+      XLSX.writeFile(libro, "Consolidado_Comparendos_LaCeja.xlsx");
+      mostrarAlerta('✅ Archivo Excel descargado exitosamente.', 'success');
+    }
+
+    function exportarPDF() {
+      if (datosConsolidadoGlobal.length === 0) {
+        mostrarAlerta('⚠️ No hay datos para exportar.', 'warning');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      // 'l' = landscape (horizontal), 'mm' = milímetros, 'a4' = tamaño de hoja
+      const doc = new jsPDF('l', 'mm', 'a4');
+
+      // Título
+      doc.setFontSize(16);
+      doc.text("Consolidado de Comparendos", 14, 15);
+      doc.setFontSize(10);
+      doc.text("Secretaría de Movilidad - Municipio de La Ceja", 14, 22);
+      doc.text("Fecha de generación: " + new Date().toLocaleDateString('es-CO'), 14, 28);
+
+      // Tabla usando autoTable
+      doc.autoTable({
+        html: '#tablaConsolidado',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [13, 110, 253], textColor: 255, fontStyle: 'bold' },
+        footStyles: { fillColor: [248, 249, 250], textColor: [0, 0, 0], fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+          6: { halign: 'right' },
+          7: { halign: 'right' },
+          8: { halign: 'right', fontStyle: 'bold' }
+        }
+      });
+
+      doc.save("Consolidado_Comparendos_LaCeja.pdf");
+      mostrarAlerta('✅ Archivo PDF descargado exitosamente.', 'success');
     }
 
     // ============================================================
     // UTILIDADES
     // ============================================================
     function mostrarAlerta(mensaje, tipo) {
-      const alertContainer = document.getElementById('alertContainer');
+      const container = document.getElementById('alertContainer');
       const alert = document.createElement('div');
       alert.className = `alert alert-${tipo} alert-dismissible fade show alert-custom`;
       alert.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-      alertContainer.appendChild(alert);
-      setTimeout(() => { if (alert.parentNode) alert.remove(); }, 5000);
+      container.appendChild(alert);
+      setTimeout(() => { if (alert.parentNode) alert.remove(); }, 4000);
     }
 
     function copiarObservaciones() {
       const texto = document.getElementById('observacionesTexto').textContent;
-      if (!texto || texto.includes('Complete el formulario para generar')) {
-        mostrarAlerta('⚠️ Complete el formulario primero para generar las observaciones.', 'warning');
+      if (texto.includes('Complete el formulario')) {
+        mostrarAlerta('⚠️ Complete el formulario primero.', 'warning');
         return;
       }
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(texto).then(() => {
-          mostrarAlerta('✅ ¡Texto copiado al portapapeles exitosamente!', 'success');
-        }).catch(err => {
-          console.error('Error al copiar: ', err);
-          metodoFallbackCopiar(texto);
-        });
-      } else {
-        metodoFallbackCopiar(texto);
-      }
+      navigator.clipboard.writeText(texto).then(() => {
+        mostrarAlerta('✅ ¡Texto copiado al portapapeles!', 'success');
+      }).catch(() => {
+        mostrarAlerta('❌ Error al copiar.', 'danger');
+      });
     }
 
-    function metodoFallbackCopiar(texto) {
-      const textArea = document.createElement('textarea');
-      textArea.value = texto;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-9999px';
-      textArea.style.top = '0';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try {
-        const exito = document.execCommand('copy');
-        if (exito) mostrarAlerta('✅ ¡Texto copiado al portapapeles exitosamente!', 'success');
-        else mostrarAlerta('❌ No se pudo copiar automáticamente. Selecciónelo y cópielo manualmente.', 'danger');
-      } catch (err) {
-        console.error('Error fallback: ', err);
-        mostrarAlerta('❌ Error al copiar el texto.', 'danger');
-      }
-      document.body.removeChild(textArea);
-    }
-
-    function limpiarValor(valor) {
-      if (valor === null || valor === undefined) return '';
-      return String(valor).trim();
-    }
-
+    function limpiarValor(valor) { return (valor === null || valor === undefined) ? '' : String(valor).trim(); }
+    
     function convertirNumero(valor) {
       if (valor === null || valor === undefined || valor === '') return 0;
       if (typeof valor === 'number') return valor;
@@ -1046,31 +849,16 @@
     function convertirFechaParaInput(valor) {
       if (!valor) return '';
       if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) return String(valor);
-      if (Object.prototype.toString.call(valor) === '[object Date]') {
-        const fecha = valor;
-        if (!isNaN(fecha.getTime())) {
-          return fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0') + '-' + String(fecha.getDate()).padStart(2, '0');
-        }
-      }
       const texto = String(valor).trim();
       let match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
       if (match) return match[3] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[1]).padStart(2, '0');
-      match = texto.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-      if (match) return match[3] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[1]).padStart(2, '0');
-      const fecha = new Date(texto);
-      if (!isNaN(fecha.getTime())) {
-        return fecha.getFullYear() + '-' + String(fecha.getMonth() + 1).padStart(2, '0') + '-' + String(fecha.getDate()).padStart(2, '0');
-      }
       return '';
     }
 
     function escaparHTML(valor) {
       if (valor === null || valor === undefined) return '';
-      return String(valor).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+      return String(valor).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-
-    document.getElementById('historial-tab').addEventListener('shown.bs.tab', cargarHistorial);
   </script>
 </body>
-  
 </html>

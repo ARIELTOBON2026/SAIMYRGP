@@ -169,13 +169,12 @@
             <div class="card-body">
               <div class="row g-3">
                 <div class="col-md-4">
-                  <label for="cedulaInfractor" class="form-label">Nro. Identificación del Infractor</label>
+                  <label for="cedulaInfractor" class="form-label">Nro. Identificación del Infractor *</label>
                   <input type="text" class="form-control" id="cedulaInfractor" inputmode="numeric" autocomplete="off" required placeholder="Ej: 123456789">
                   <div class="invalid-feedback" id="cedulaError"></div>
                 </div>
                 <div class="col-md-8">
-                  <label for="nombre" class="form-label">Nombre Infractor / Autorizado</label>
-                  <!-- CAMBIO 1: Forzar mayúsculas en tiempo real -->
+                  <label for="nombre" class="form-label">Nombre Infractor / Autorizado *</label>
                   <input type="text" class="form-control" id="nombre" required placeholder="Nombre completo" oninput="this.value = this.value.toUpperCase()">
                 </div>
               </div>
@@ -188,14 +187,12 @@
             <div class="card-body">
               <div class="row g-3">
                 <div class="col-md-3">
-                  <label for="placa" class="form-label">Placa</label>
-                  <!-- CAMBIO 1: Forzar mayúsculas en tiempo real -->
+                  <label for="placa" class="form-label">Placa *</label>
                   <input type="text" class="form-control text-uppercase fw-bold text-center fs-5" id="placa" maxlength="6" required placeholder="ABC123" oninput="this.value = this.value.toUpperCase()">
                   <div class="invalid-feedback" id="placaError"></div>
                 </div>
                 <div class="col-md-3">
-                  <label for="tipoInfraccion" class="form-label">Tipo de Infracción</label>
-                  <!-- CAMBIO 2: Detectar cambio para aplicar lógica de Accidente -->
+                  <label for="tipoInfraccion" class="form-label">Tipo de Infracción *</label>
                   <select class="form-select" id="tipoInfraccion" required onchange="verificarTipoInfraccion()">
                     <option value="">Seleccione...</option>
                     <option value="Comparendo">Comparendo</option>
@@ -286,8 +283,9 @@
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label for="fechaPago" class="form-label">Fecha de Pago</label>
-                  <input type="date" class="form-control" id="fechaPago">
+                  <label for="fechaPago" class="form-label">Fecha de Pago *</label>
+                  <!-- CAMBIO: Se agregó el atributo required -->
+                  <input type="date" class="form-control" id="fechaPago" required>
                 </div>
               </div>
             </div>
@@ -402,7 +400,6 @@
                   </tr>
                 </thead>
                 <tbody id="tbodyConsolidado">
-                  <!-- Los datos se insertarán aquí dinámicamente -->
                 </tbody>
                 <tfoot class="table-group-divider fw-bold bg-light">
                   <tr>
@@ -423,7 +420,7 @@
         </div>
       </div>
 
-    </div> <!-- Fin tab-content -->
+    </div>
 
     <!-- Contenedor de Alertas (Toasts) -->
     <div id="alertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
@@ -518,12 +515,9 @@
     let datosFiltrados = [];
     let pdfBlobGlobal = null;
 
-    // ============================================================
-    // COMUNICACIÓN CON GOOGLE APPS SCRIPT
-    // ============================================================
     function callGoogleScript(accion, params = {}) {
       const payload = { accion: accion, ...params };
-      console.log(" Enviando a GAS:", accion, payload);
+      console.log("📤 Enviando a GAS:", accion, payload);
 
       return fetch(SCRIPT_URL, {
         method: 'POST',
@@ -536,7 +530,7 @@
           return response.json();
         } else {
           const text = await response.text();
-          console.error(" Respuesta cruda:", text.substring(0, 500));
+          console.error("❌ Respuesta cruda:", text.substring(0, 500));
           throw new Error("El servidor no devolvió JSON. Revisa la consola (F12).");
         }
       })
@@ -546,12 +540,18 @@
       });
     }
 
-    // ============================================================
-    // INICIALIZACIÓN
-    // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
       calcularTotales();
       document.getElementById('comparendoForm').addEventListener('submit', guardarFormulario);
+      
+      // CAMBIO: Prevenir que la tecla Enter envíe el formulario
+      document.getElementById('comparendoForm').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          return false;
+        }
+      });
+
       document.getElementById('cedulaInfractor').addEventListener('blur', validarCedula);
       document.getElementById('placa').addEventListener('blur', validarPlaca);
 
@@ -579,11 +579,6 @@
       }
     });
 
-    // ============================================================
-    // LÓGICA DEL FORMULARIO
-    // ============================================================
-    
-    // CAMBIO 2: Nueva función para detectar selección de "Accidente"
     function verificarTipoInfraccion() {
       const tipoInfraccion = document.getElementById('tipoInfraccion').value;
       const tipoAgente = document.getElementById('tipoAgente');
@@ -593,8 +588,6 @@
         tipoAgente.value = 'Agentes de Tránsito (Autoridades locales)';
         numeroComparendo.value = 'ACCIDENTE';
       } else {
-        // Si cambia a "Comparendo", limpiamos los valores forzados de accidente
-        // para que el usuario pueda seleccionar el agente y se autocompleté normalmente
         if (numeroComparendo.value === 'ACCIDENTE') {
           numeroComparendo.value = '';
           tipoAgente.value = '';
@@ -606,7 +599,6 @@
     function autocompletarComparendo() {
       const tipoInfraccion = document.getElementById('tipoInfraccion').value;
       
-      // CAMBIO 2: Si es accidente, mantenemos los valores forzados sin importar el cambio de agente
       if (tipoInfraccion === 'Accidente') {
         document.getElementById('tipoAgente').value = 'Agentes de Tránsito (Autoridades locales)';
         document.getElementById('numeroComparendo').value = 'ACCIDENTE';
@@ -650,7 +642,6 @@
     }
 
     function actualizarObservaciones() {
-      // CAMBIO 1: Asegurar mayúsculas en las observaciones generadas
       const nombre = document.getElementById('nombre').value.trim().toUpperCase() || '[NOMBRE]';
       const cedula = document.getElementById('cedulaInfractor').value.trim() || '[ID]';
       const placa = document.getElementById('placa').value.trim().toUpperCase() || '[PLACA]';
@@ -716,18 +707,17 @@
       e.preventDefault();
       if (!validarCedula() || !validarPlaca()) return;
 
-      // CAMBIO 1: Validar que al menos uno de los valores sea mayor a cero
       const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
       const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
       
       if (valorGrua === 0 && valorParqueadero === 0) {
-        mostrarAlerta('️ Debe ingresar al menos un valor (Grúa o Parqueadero) mayor a cero.', 'warning');
+        mostrarAlerta('⚠️ Debe ingresar al menos un valor (Grúa o Parqueadero) mayor a cero.', 'warning');
         return;
       }
 
       const datos = {
         cedulaInfractor: document.getElementById('cedulaInfractor').value.trim(),
-        nombre: document.getElementById('nombre').value.trim().toUpperCase(), // CAMBIO 1: Guardar en mayúsculas
+        nombre: document.getElementById('nombre').value.trim().toUpperCase(),
         placa: document.getElementById('placa').value.trim().toUpperCase(),
         tipoInfraccion: document.getElementById('tipoInfraccion').value,
         tipoAgente: document.getElementById('tipoAgente').value,
@@ -753,19 +743,16 @@
             mostrarAlerta('✅ ' + response.message, 'success');
             nuevoFormulario();
           } else {
-            mostrarAlerta(' ' + response.message, 'danger');
+            mostrarAlerta('❌ ' + response.message, 'danger');
           }
         })
         .catch(error => {
           btnGuardar.innerHTML = textoOriginal;
           btnGuardar.disabled = false;
-          mostrarAlerta(' Error de conexión: ' + error.message, 'danger');
+          mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
         });
     }
 
-    // ============================================================
-    // LÓGICA DE BÚSQUEDA Y EDICIÓN
-    // ============================================================
     function mostrarModalBusqueda() {
       document.getElementById('valorBusqueda').value = '';
       new bootstrap.Modal(document.getElementById('modalBusqueda')).show();
@@ -782,24 +769,19 @@
       const btn = document.getElementById('btnEjecutarBusqueda');
       const textoOriginal = btn.innerHTML;
       
-      // CAMBIO 2: Asegurar que el botón se deshabilite y muestre estado de carga
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
       btn.disabled = true;
 
-      // CAMBIO 2: Agregar timeout de seguridad por si la petición se cuelga
       const timeoutId = setTimeout(() => {
         console.error('⏱️ Timeout en búsqueda - 10 segundos');
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
         mostrarAlerta('⚠️ La búsqueda tardó demasiado. Intente nuevamente.', 'warning');
-      }, 10000); // 10 segundos de timeout
+      }, 10000);
 
       callGoogleScript('buscar', { cedula: valor })
         .then(response => {
-          // CAMBIO 2: Limpiar timeout si la petición fue exitosa
           clearTimeout(timeoutId);
-          
-          // CAMBIO 2: Siempre restaurar el botón
           btn.innerHTML = textoOriginal;
           btn.disabled = false;
           
@@ -807,7 +789,6 @@
           
           const resultadosDiv = document.getElementById('resultadosBusqueda');
           
-          // CAMBIO 3: Notificación explícita cuando no se encuentran registros
           if (!response || !response.success || !response.registros.length) {
             resultadosDiv.innerHTML = `<div class="alert alert-warning text-center"><i class="bi bi-exclamation-triangle-fill me-2"></i>No se encontraron registros para la cédula ingresada.</div>`;
             mostrarAlerta('⚠️ No se encontraron registros para la cédula ingresada.', 'warning');
@@ -824,7 +805,6 @@
           }
         })
         .catch(error => {
-          // CAMBIO 2: Limpiar timeout y restaurar botón en caso de error
           clearTimeout(timeoutId);
           btn.innerHTML = textoOriginal;
           btn.disabled = false;
@@ -839,7 +819,6 @@
       document.getElementById('filaActual').value = Number(fila);
 
       document.getElementById('cedulaInfractor').value = limpiarValor(d.cedulaInfractor);
-      // CAMBIO 1: Asegurar mayúsculas al cargar datos para edición
       document.getElementById('nombre').value = limpiarValor(d.nombre).toUpperCase();
       document.getElementById('placa').value = limpiarValor(d.placa).toUpperCase();
       document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo).toUpperCase();
@@ -854,15 +833,12 @@
       document.getElementById('textoBotonGuardar').textContent = 'ACTUALIZAR';
 
       calcularTotales();
-      mostrarAlerta(' Registro cargado para edición.', 'success');
+      mostrarAlerta('📝 Registro cargado para edición.', 'success');
       
       const tab = new bootstrap.Tab(document.getElementById('pills-form-tab'));
       tab.show();
     }
 
-    // ============================================================
-    // CONSOLIDADO, FILTROS Y EXPORTACIÓN
-    // ============================================================
     function cargarConsolidado() {
       document.getElementById('loadingConsolidado').style.display = 'block';
       document.getElementById('contenedorTablaConsolidado').style.display = 'none';
@@ -976,7 +952,7 @@
       limpiarFiltrosUI();
       datosFiltrados = [...datosConsolidadoGlobal];
       renderizarTablaConsolidado(datosFiltrados);
-      mostrarAlerta(' Filtros limpiados. Mostrando todos los registros.', 'info');
+      mostrarAlerta('🧹 Filtros limpiados. Mostrando todos los registros.', 'info');
     }
 
     function limpiarFiltrosUI() {
@@ -999,7 +975,7 @@
 
     function exportarPDF() {
       if (datosFiltrados.length === 0) {
-        mostrarAlerta('️ No hay datos para exportar.', 'warning');
+        mostrarAlerta('⚠️ No hay datos para exportar.', 'warning');
         return;
       }
 
@@ -1052,9 +1028,6 @@
       mostrarAlerta('✅ PDF descargado exitosamente.', 'success');
     }
 
-    // ============================================================
-    // UTILIDADES
-    // ============================================================
     function mostrarAlerta(mensaje, tipo) {
       const container = document.getElementById('alertContainer');
       const alert = document.createElement('div');

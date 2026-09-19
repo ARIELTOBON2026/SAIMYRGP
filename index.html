@@ -523,7 +523,7 @@
     // ============================================================
     function callGoogleScript(accion, params = {}) {
       const payload = { accion: accion, ...params };
-      console.log("📤 Enviando a GAS:", accion, payload);
+      console.log(" Enviando a GAS:", accion, payload);
 
       return fetch(SCRIPT_URL, {
         method: 'POST',
@@ -536,7 +536,7 @@
           return response.json();
         } else {
           const text = await response.text();
-          console.error("❌ Respuesta cruda:", text.substring(0, 500));
+          console.error(" Respuesta cruda:", text.substring(0, 500));
           throw new Error("El servidor no devolvió JSON. Revisa la consola (F12).");
         }
       })
@@ -716,6 +716,15 @@
       e.preventDefault();
       if (!validarCedula() || !validarPlaca()) return;
 
+      // CAMBIO 1: Validar que al menos uno de los valores sea mayor a cero
+      const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
+      const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
+      
+      if (valorGrua === 0 && valorParqueadero === 0) {
+        mostrarAlerta('️ Debe ingresar al menos un valor (Grúa o Parqueadero) mayor a cero.', 'warning');
+        return;
+      }
+
       const datos = {
         cedulaInfractor: document.getElementById('cedulaInfractor').value.trim(),
         nombre: document.getElementById('nombre').value.trim().toUpperCase(), // CAMBIO 1: Guardar en mayúsculas
@@ -723,8 +732,8 @@
         tipoInfraccion: document.getElementById('tipoInfraccion').value,
         tipoAgente: document.getElementById('tipoAgente').value,
         numeroComparendo: document.getElementById('numeroComparendo').value.trim().toUpperCase(),
-        valorGrua: parseFloat(document.getElementById('valorGrua').value) || 0,
-        valorParqueadero: parseFloat(document.getElementById('valorParqueadero').value) || 0,
+        valorGrua: valorGrua,
+        valorParqueadero: valorParqueadero,
         fechaPago: document.getElementById('fechaPago').value,
         resumenFacturacion: document.getElementById('observacionesTexto').textContent
       };
@@ -744,13 +753,13 @@
             mostrarAlerta('✅ ' + response.message, 'success');
             nuevoFormulario();
           } else {
-            mostrarAlerta('❌ ' + response.message, 'danger');
+            mostrarAlerta(' ' + response.message, 'danger');
           }
         })
         .catch(error => {
           btnGuardar.innerHTML = textoOriginal;
           btnGuardar.disabled = false;
-          mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
+          mostrarAlerta(' Error de conexión: ' + error.message, 'danger');
         });
     }
 
@@ -765,16 +774,35 @@
 
     function ejecutarBusqueda() {
       const valor = document.getElementById('valorBusqueda').value.trim();
-      if (!/^\d+$/.test(valor)) { mostrarAlerta('⚠️ La cédula debe contener únicamente números', 'warning'); return; }
+      if (!/^\d+$/.test(valor)) { 
+        mostrarAlerta('⚠️ La cédula debe contener únicamente números', 'warning'); 
+        return; 
+      }
 
       const btn = document.getElementById('btnEjecutarBusqueda');
+      const textoOriginal = btn.innerHTML;
+      
+      // CAMBIO 2: Asegurar que el botón se deshabilite y muestre estado de carga
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
       btn.disabled = true;
 
+      // CAMBIO 2: Agregar timeout de seguridad por si la petición se cuelga
+      const timeoutId = setTimeout(() => {
+        console.error('⏱️ Timeout en búsqueda - 10 segundos');
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+        mostrarAlerta('⚠️ La búsqueda tardó demasiado. Intente nuevamente.', 'warning');
+      }, 10000); // 10 segundos de timeout
+
       callGoogleScript('buscar', { cedula: valor })
         .then(response => {
-          btn.innerHTML = '<i class="bi bi-search me-1"></i>Buscar';
+          // CAMBIO 2: Limpiar timeout si la petición fue exitosa
+          clearTimeout(timeoutId);
+          
+          // CAMBIO 2: Siempre restaurar el botón
+          btn.innerHTML = textoOriginal;
           btn.disabled = false;
+          
           bootstrap.Modal.getInstance(document.getElementById('modalBusqueda')).hide();
           
           const resultadosDiv = document.getElementById('resultadosBusqueda');
@@ -796,7 +824,9 @@
           }
         })
         .catch(error => {
-          btn.innerHTML = '<i class="bi bi-search me-1"></i>Buscar';
+          // CAMBIO 2: Limpiar timeout y restaurar botón en caso de error
+          clearTimeout(timeoutId);
+          btn.innerHTML = textoOriginal;
           btn.disabled = false;
           mostrarAlerta('❌ Error al buscar: ' + error.message, 'danger');
         });
@@ -824,7 +854,7 @@
       document.getElementById('textoBotonGuardar').textContent = 'ACTUALIZAR';
 
       calcularTotales();
-      mostrarAlerta('📝 Registro cargado para edición.', 'success');
+      mostrarAlerta(' Registro cargado para edición.', 'success');
       
       const tab = new bootstrap.Tab(document.getElementById('pills-form-tab'));
       tab.show();
@@ -946,7 +976,7 @@
       limpiarFiltrosUI();
       datosFiltrados = [...datosConsolidadoGlobal];
       renderizarTablaConsolidado(datosFiltrados);
-      mostrarAlerta('🧹 Filtros limpiados. Mostrando todos los registros.', 'info');
+      mostrarAlerta(' Filtros limpiados. Mostrando todos los registros.', 'info');
     }
 
     function limpiarFiltrosUI() {
@@ -969,7 +999,7 @@
 
     function exportarPDF() {
       if (datosFiltrados.length === 0) {
-        mostrarAlerta('⚠️ No hay datos para exportar.', 'warning');
+        mostrarAlerta('️ No hay datos para exportar.', 'warning');
         return;
       }
 

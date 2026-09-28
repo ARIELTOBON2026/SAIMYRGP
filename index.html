@@ -506,7 +506,7 @@
        LÓGICA DE LA APLICACIÓN
   ========================================================== -->
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxROv6mVi4x77-MhmaavA6lIjH15af68Ia53RX3M1OIP3tUj-q7HFa30Xi9lFpd9sNs/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwx-IDofrHRFPNBBp3GcspmZ9jWZXyKXFdCbBj7wUlGUnxjdb7X-XaPBBI-eefOPUNo/exec";
 
     let filaEditando = null;
     let registrosBusquedaActual = [];
@@ -516,6 +516,18 @@
 
     // ✅ CORREGIDO: Con timeout de seguridad usando AbortController
     function callGoogleScript(accion, params = {}) {
+      /*
+       * Lecturas (buscar/listarTodos) por JSONP:
+       * Apps Script puede redirigir las respuestas de ContentService y el
+       * navegador puede bloquear fetch por CORS. JSONP evita ese problema.
+       *
+       * Escrituras (guardar/actualizar/eliminar) continúan por POST para
+       * conservar la lógica actual.
+       */
+      if (accion === 'buscar' || accion === 'listarTodos' || accion === 'obtenerRegistro') {
+        return llamarGoogleScriptJSONP(accion, params);
+      }
+
       const payload = { accion: accion, ...params };
       console.log("📤 Enviando a GAS:", accion, payload);
 
@@ -530,22 +542,89 @@
       })
       .then(async response => {
         clearTimeout(timeoutId);
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          return response.json();
-        } else {
-          const text = await response.text();
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        const text = await response.text();
+
+        try {
+          return JSON.parse(text);
+        } catch (e) {
           console.error("❌ Respuesta cruda:", text.substring(0, 500));
-          throw new Error("El servidor no devolvió JSON. Revisa la consola (F12).");
+          throw new Error("El servidor no devolvió una respuesta JSON válida.");
         }
       })
       .catch(error => {
         clearTimeout(timeoutId);
+
         if (error.name === 'AbortError') {
           throw new Error("Timeout: El servidor tardó demasiado en responder.");
         }
-        console.error("❌ Error de red o CORS:", error);
+
+        console.error("❌ Error de red:", error);
         throw new Error("No se pudo conectar con Google Apps Script.");
+      });
+    }
+
+    function llamarGoogleScriptJSONP(accion, params = {}) {
+      return new Promise((resolve, reject) => {
+        const callbackName = '__gasCallback_' + Date.now() + '_' +
+          Math.random().toString(36).substring(2, 8);
+
+        const script = document.createElement('script');
+        const query = new URLSearchParams();
+
+        query.set('accion', accion);
+        query.set('callback', callbackName);
+
+        Object.keys(params || {}).forEach(key => {
+          const valor = params[key];
+          if (valor !== undefined && valor !== null) {
+            query.set(key, typeof valor === 'object' ? JSON.stringify(valor) : String(valor));
+          }
+        });
+
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error("Timeout: Google Apps Script tardó demasiado en responder."));
+        }, 20000);
+
+        function cleanup() {
+          clearTimeout(timeoutId);
+          try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = function(response) {
+          cleanup();
+
+          if (!response) {
+            reject(new Error("El servidor devolvió una respuesta vacía."));
+            return;
+          }
+
+          console.log("📥 Respuesta GAS [" + accion + "]:", response);
+          resolve(response);
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error("No se pudo comunicar con Google Apps Script."));
+        };
+
+        script.src = SCRIPT_URL +
+          '?accion=' + encodeURIComponent(accion) +
+          '&callback=' + encodeURIComponent(callbackName) +
+          Object.keys(params || {}).map(key => {
+            const valor = params[key];
+            if (valor === undefined || valor === null) return '';
+            return '&' + encodeURIComponent(key) + '=' +
+              encodeURIComponent(typeof valor === 'object' ? JSON.stringify(valor) : String(valor));
+          }).join('');
+
+        document.body.appendChild(script);
       });
     }
 
@@ -770,54 +849,83 @@
     // ✅ CORREGIDO: Ahora envía { valor: valor } y permite buscar por cédula O placa
     function ejecutarBusqueda() {
       const valor = document.getElementById('valorBusqueda').value.trim().toUpperCase();
-      
-      if (valor.length < 3) { 
-        mostrarAlerta('⚠️ Ingrese al menos 3 caracteres para buscar', 'warning'); 
-        return; 
+
+      if (valor.length < 3) {
+        mostrarAlerta('⚠️ Ingrese al menos 3 caracteres para buscar', 'warning');
+        return;
       }
 
       const btn = document.getElementById('btnEjecutarBusqueda');
       const textoOriginal = btn.innerHTML;
-      
+
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
       btn.disabled = true;
 
-      const timeoutId = setTimeout(() => {
-        console.error('⏱️ Timeout en búsqueda - 10 segundos');
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-        mostrarAlerta('⚠️ La búsqueda tardó demasiado. Intente nuevamente.', 'warning');
-      }, 10000);
-
       callGoogleScript('buscar', { valor: valor })
         .then(response => {
-          clearTimeout(timeoutId);
           btn.innerHTML = textoOriginal;
           btn.disabled = false;
-          
-          bootstrap.Modal.getInstance(document.getElementById('modalBusqueda')).hide();
-          
+
+          const modalBusqueda = bootstrap.Modal.getInstance(document.getElementById('modalBusqueda'));
+          if (modalBusqueda) modalBusqueda.hide();
+
           const resultadosDiv = document.getElementById('resultadosBusqueda');
-          
-          if (!response || !response.success || !response.registros || response.registros.length === 0) {
-            resultadosDiv.innerHTML = `<div class="alert alert-warning text-center"><i class="bi bi-exclamation-triangle-fill me-2"></i>No se encontraron registros para: ${valor}</div>`;
+
+          if (!response || !response.success || !Array.isArray(response.registros) || response.registros.length === 0) {
+            resultadosDiv.innerHTML =
+              `<div class="alert alert-warning text-center">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                No se encontraron registros para: ${escaparHTML(valor)}
+              </div>`;
+
             mostrarAlerta('⚠️ No se encontraron registros para: ' + valor, 'warning');
-          } else {
-            registrosBusquedaActual = response.registros;
-            let html = `<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Placa</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
-            registrosBusquedaActual.forEach((reg, idx) => {
-              const d = reg.datos || {};
-              html += `<tr><td>${escaparHTML(d.fechaRegistro||'')}</td><td>${escaparHTML(d.cedulaInfractor||'')}</td><td><strong>${escaparHTML(d.placa||'')}</strong></td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
-            });
-            html += `</tbody></table></div>`;
-            resultadosDiv.innerHTML = html;
             new bootstrap.Modal(document.getElementById('modalResultados')).show();
+            return;
           }
+
+          registrosBusquedaActual = response.registros;
+
+          let html = `
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Cédula</th>
+                    <th>Placa</th>
+                    <th>Total</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>`;
+
+          registrosBusquedaActual.forEach((reg, idx) => {
+            const d = reg.datos || {};
+            html += `
+              <tr>
+                <td>${escaparHTML(d.fechaRegistro || '')}</td>
+                <td>${escaparHTML(d.cedulaInfractor || '')}</td>
+                <td><strong>${escaparHTML(d.placa || '')}</strong></td>
+                <td>${formatearMoneda(d.total)}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary"
+                    onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">
+                    Editar
+                  </button>
+                </td>
+              </tr>`;
+          });
+
+          html += `</tbody></table></div>`;
+          resultadosDiv.innerHTML = html;
+
+          new bootstrap.Modal(document.getElementById('modalResultados')).show();
+          mostrarAlerta(`✅ Se encontraron ${response.registros.length} registro(s).`, 'success');
         })
         .catch(error => {
-          clearTimeout(timeoutId);
           btn.innerHTML = textoOriginal;
           btn.disabled = false;
+          console.error('❌ Error al buscar:', error);
           mostrarAlerta('❌ Error al buscar: ' + error.message, 'danger');
         });
     }
@@ -854,48 +962,44 @@
       const loading = document.getElementById('loadingConsolidado');
       const tabla = document.getElementById('contenedorTablaConsolidado');
       const sinDatos = document.getElementById('sinDatosConsolidado');
-      
+
       loading.style.display = 'block';
       tabla.style.display = 'none';
       sinDatos.style.display = 'none';
 
-      const timeoutId = setTimeout(() => {
-        console.error('⏱️ Timeout: El servidor tardó más de 20 segundos');
-        loading.style.display = 'none';
-        sinDatos.style.display = 'block';
-        mostrarAlerta('⚠️ El servidor tardó demasiado. Intente nuevamente.', 'warning');
-      }, 20000);
-
       callGoogleScript('listarTodos')
         .then(response => {
-          clearTimeout(timeoutId);
           loading.style.display = 'none';
-          
+
           console.log('📥 Respuesta consolidado:', response);
-          
-          if (!response || !response.success) {
+
+          if (!response || response.success !== true) {
             sinDatos.style.display = 'block';
-            mostrarAlerta('❌ Error: ' + (response?.message || 'Respuesta inválida'), 'danger');
+            mostrarAlerta('❌ Error: ' + (response?.message || 'Respuesta inválida del servidor.'), 'danger');
             return;
           }
-          
-          if (!response.registros || response.registros.length === 0) {
-            sinDatos.style.display = 'block';
-            mostrarAlerta('ℹ️ No hay registros en la base de datos', 'info');
+
+          if (!Array.isArray(response.registros) || response.registros.length === 0) {
+            datosConsolidadoGlobal = [];
+            datosFiltrados = [];
+            renderizarTablaConsolidado([]);
+            mostrarAlerta('ℹ️ No hay registros en la base de datos.', 'info');
             return;
           }
 
           datosConsolidadoGlobal = response.registros;
           datosFiltrados = [...datosConsolidadoGlobal];
-          
+
           limpiarFiltrosUI();
           renderizarTablaConsolidado(datosFiltrados);
-          mostrarAlerta(`✅ Se cargaron ${datosFiltrados.length} registros`, 'success');
+
+          mostrarAlerta(`✅ Se cargaron ${datosFiltrados.length} registros.`, 'success');
         })
         .catch(error => {
-          clearTimeout(timeoutId);
           loading.style.display = 'none';
+          tabla.style.display = 'none';
           sinDatos.style.display = 'block';
+
           console.error('❌ Error al cargar consolidado:', error);
           mostrarAlerta('❌ Error al cargar consolidado: ' + error.message, 'danger');
         });

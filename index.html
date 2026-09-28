@@ -514,16 +514,22 @@
     let datosFiltrados = [];
     let pdfBlobGlobal = null;
 
+    // ✅ CORREGIDO: Con timeout de seguridad usando AbortController
     function callGoogleScript(accion, params = {}) {
       const payload = { accion: accion, ...params };
       console.log("📤 Enviando a GAS:", accion, payload);
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
+
       return fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       })
       .then(async response => {
+        clearTimeout(timeoutId);
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           return response.json();
@@ -534,5 +540,575 @@
         }
       })
       .catch(error => {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error("Timeout: El servidor tardó demasiado en responder.");
+        }
         console.error("❌ Error de red o CORS:", error);
         throw new Error("No se pudo conectar con Google Apps Script.");
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      calcularTotales();
+      document.getElementById('comparendoForm').addEventListener('submit', guardarFormulario);
+      
+      document.getElementById('comparendoForm').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      document.getElementById('cedulaInfractor').addEventListener('blur', validarCedula);
+      document.getElementById('placa').addEventListener('blur', validarPlaca);
+
+      const campos = ['cedulaInfractor', 'nombre', 'placa', 'tipoInfraccion', 'numeroComparendo', 'tipoAgente', 'valorGrua', 'valorParqueadero', 'fechaPago'];
+      campos.forEach(campo => {
+        const elemento = document.getElementById(campo);
+        elemento.addEventListener('input', actualizarObservaciones);
+        elemento.addEventListener('change', actualizarObservaciones);
+      });
+
+      document.getElementById('valorBusqueda').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); ejecutarBusqueda(); }
+      });
+
+      const modalPDF = document.getElementById('modalVistaPreviaPDF');
+      if(modalPDF) {
+        modalPDF.addEventListener('hidden.bs.modal', function () {
+          const iframe = document.getElementById('iframeVistaPreviaPDF');
+          if (iframe && iframe.src) {
+            URL.revokeObjectURL(iframe.src);
+            iframe.src = '';
+          }
+          pdfBlobGlobal = null;
+        });
+      }
+    });
+
+    function verificarTipoInfraccion() {
+      const tipoInfraccion = document.getElementById('tipoInfraccion').value;
+      const tipoAgente = document.getElementById('tipoAgente');
+      const numeroComparendo = document.getElementById('numeroComparendo');
+
+      if (tipoInfraccion === 'Accidente') {
+        tipoAgente.value = 'Agentes de Tránsito (Autoridades locales)';
+        numeroComparendo.value = 'ACCIDENTE';
+      } else {
+        if (numeroComparendo.value === 'ACCIDENTE') {
+          numeroComparendo.value = '';
+          tipoAgente.value = '';
+        }
+      }
+      actualizarObservaciones();
+    }
+
+    function autocompletarComparendo() {
+      const tipoInfraccion = document.getElementById('tipoInfraccion').value;
+      
+      if (tipoInfraccion === 'Accidente') {
+        document.getElementById('tipoAgente').value = 'Agentes de Tránsito (Autoridades locales)';
+        document.getElementById('numeroComparendo').value = 'ACCIDENTE';
+        actualizarObservaciones();
+        return;
+      }
+
+      const tipoAgente = document.getElementById('tipoAgente').value;
+      const numeroComparendo = document.getElementById('numeroComparendo');
+      if (tipoAgente === 'Agentes de Tránsito (Autoridades locales)') numeroComparendo.value = '0537600000005734';
+      else if (tipoAgente === 'Policía de Tránsito y Transporte') numeroComparendo.value = 'p9999999900000';
+      else numeroComparendo.value = '';
+      actualizarObservaciones();
+    }
+
+    function calcularTotales() {
+      const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
+      const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
+      const total = valorGrua + valorParqueadero;
+      const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
+      const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
+
+      document.getElementById('subtotal').value = formatearMoneda(subtotal);
+      document.getElementById('iva').value = formatearMoneda(iva);
+      document.getElementById('total').value = formatearMoneda(total);
+      actualizarObservaciones();
+    }
+
+    function formatearMoneda(valor) {
+      return '$ ' + Number(valor || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function formatearFechaParaTabla(fechaStr) {
+      if (!fechaStr) return '-';
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) return fechaStr;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+        const [year, month, day] = fechaStr.split('-');
+        return `${day}/${month}/${year}`;
+      }
+      return fechaStr;
+    }
+
+    function actualizarObservaciones() {
+      const nombre = document.getElementById('nombre').value.trim().toUpperCase() || '[NOMBRE]';
+      const cedula = document.getElementById('cedulaInfractor').value.trim() || '[ID]';
+      const placa = document.getElementById('placa').value.trim().toUpperCase() || '[PLACA]';
+      const tipoInfraccion = document.getElementById('tipoInfraccion').value || '[INFRACCIÓN]';
+      const numeroComparendo = document.getElementById('numeroComparendo').value.trim().toUpperCase() || '[COMPARENDO]';
+      const tipoAgente = document.getElementById('tipoAgente').value || '[AGENTE]';
+      const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
+      const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
+      const fechaPago = document.getElementById('fechaPago').value || '[FECHA]';
+      const total = valorGrua + valorParqueadero;
+      const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
+      const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
+
+      document.getElementById('observacionesTexto').textContent = 
+        `FACTURACIÓN GRUA Y PARQUEADERO, NOMBRE: ${nombre}, ID: ${cedula}, PLACA: ${placa}, INFRACCIÓN: ${tipoInfraccion}, COMPARENDO: ${numeroComparendo}, AGENTE: ${tipoAgente}, GRUA: ${formatearMoneda(valorGrua)}, PARQUEADERO: ${formatearMoneda(valorParqueadero)}, CONVENIO: 13627, SUBTOTAL: ${formatearMoneda(subtotal)}, IVA: ${formatearMoneda(iva)}, TOTAL: ${formatearMoneda(total)}, FECHA DE PAGO: ${fechaPago}`;
+    }
+
+    function validarCedula() {
+      const cedula = document.getElementById('cedulaInfractor').value.trim();
+      if (!cedula || !/^\d{6,10}$/.test(cedula)) {
+        mostrarError('cedulaInfractor', 'La cédula debe tener entre 6 y 10 dígitos numéricos');
+        return false;
+      }
+      ocultarError('cedulaInfractor');
+      return true;
+    }
+
+    function validarPlaca() {
+      const placa = document.getElementById('placa').value.trim().toUpperCase();
+      if (!placa || (!/^[A-Z]{3}\d{3}$/.test(placa) && !/^[A-Z]{3}\d{2}[A-Z]$/.test(placa))) {
+        mostrarError('placa', 'Formato de placa inválido (ABC123 o ABC12D)');
+        return false;
+      }
+      ocultarError('placa');
+      return true;
+    }
+
+    function mostrarError(campo, mensaje) {
+      document.getElementById(campo).classList.add('is-invalid');
+      const errorDiv = document.getElementById(campo + 'Error');
+      if (errorDiv) { errorDiv.textContent = mensaje; errorDiv.style.display = 'block'; }
+    }
+
+    function ocultarError(campo) {
+      document.getElementById(campo).classList.remove('is-invalid');
+      const errorDiv = document.getElementById(campo + 'Error');
+      if (errorDiv) errorDiv.style.display = 'none';
+    }
+
+    function nuevoFormulario() {
+      document.getElementById('comparendoForm').reset();
+      document.getElementById('filaActual').value = '';
+      filaEditando = null;
+      document.getElementById('modoEdicion').style.display = 'none';
+      document.getElementById('textoBotonGuardar').textContent = 'GUARDAR';
+      ocultarError('cedulaInfractor');
+      ocultarError('placa');
+      calcularTotales();
+      mostrarAlerta('📝 Formulario limpiado', 'info');
+    }
+
+    function guardarFormulario(e) {
+      e.preventDefault();
+      if (!validarCedula() || !validarPlaca()) return;
+
+      const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
+      const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
+      
+      if (valorGrua === 0 && valorParqueadero === 0) {
+        mostrarAlerta('⚠️ Debe ingresar al menos un valor (Grúa o Parqueadero) mayor a cero.', 'warning');
+        return;
+      }
+
+      const datos = {
+        cedulaInfractor: document.getElementById('cedulaInfractor').value.trim(),
+        nombre: document.getElementById('nombre').value.trim().toUpperCase(),
+        placa: document.getElementById('placa').value.trim().toUpperCase(),
+        tipoInfraccion: document.getElementById('tipoInfraccion').value,
+        tipoAgente: document.getElementById('tipoAgente').value,
+        numeroComparendo: document.getElementById('numeroComparendo').value.trim().toUpperCase(),
+        valorGrua: valorGrua,
+        valorParqueadero: valorParqueadero,
+        fechaPago: document.getElementById('fechaPago').value,
+        resumenFacturacion: document.getElementById('observacionesTexto').textContent
+      };
+      datos.total = datos.valorGrua + datos.valorParqueadero;
+
+      const fila = document.getElementById('filaActual').value;
+      const btnGuardar = document.querySelector('button[type="submit"]');
+      const textoOriginal = btnGuardar.innerHTML;
+      btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+      btnGuardar.disabled = true;
+
+      callGoogleScript(fila ? 'actualizar' : 'guardar', { fila: fila ? Number(fila) : null, datos: datos })
+        .then(response => {
+          btnGuardar.innerHTML = textoOriginal;
+          btnGuardar.disabled = false;
+          if (response.success) {
+            mostrarAlerta('✅ ' + response.message, 'success');
+            nuevoFormulario();
+          } else {
+            mostrarAlerta('❌ ' + response.message, 'danger');
+          }
+        })
+        .catch(error => {
+          btnGuardar.innerHTML = textoOriginal;
+          btnGuardar.disabled = false;
+          mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
+        });
+    }
+
+    function mostrarModalBusqueda() {
+      document.getElementById('valorBusqueda').value = '';
+      new bootstrap.Modal(document.getElementById('modalBusqueda')).show();
+      setTimeout(() => { document.getElementById('valorBusqueda').focus(); }, 400);
+    }
+
+    // ✅ CORREGIDO: Ahora envía { valor: valor } y permite buscar por cédula O placa
+    function ejecutarBusqueda() {
+      const valor = document.getElementById('valorBusqueda').value.trim().toUpperCase();
+      
+      if (valor.length < 3) { 
+        mostrarAlerta('⚠️ Ingrese al menos 3 caracteres para buscar', 'warning'); 
+        return; 
+      }
+
+      const btn = document.getElementById('btnEjecutarBusqueda');
+      const textoOriginal = btn.innerHTML;
+      
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
+      btn.disabled = true;
+
+      const timeoutId = setTimeout(() => {
+        console.error('⏱️ Timeout en búsqueda - 10 segundos');
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+        mostrarAlerta('⚠️ La búsqueda tardó demasiado. Intente nuevamente.', 'warning');
+      }, 10000);
+
+      callGoogleScript('buscar', { valor: valor })
+        .then(response => {
+          clearTimeout(timeoutId);
+          btn.innerHTML = textoOriginal;
+          btn.disabled = false;
+          
+          bootstrap.Modal.getInstance(document.getElementById('modalBusqueda')).hide();
+          
+          const resultadosDiv = document.getElementById('resultadosBusqueda');
+          
+          if (!response || !response.success || !response.registros || response.registros.length === 0) {
+            resultadosDiv.innerHTML = `<div class="alert alert-warning text-center"><i class="bi bi-exclamation-triangle-fill me-2"></i>No se encontraron registros para: ${valor}</div>`;
+            mostrarAlerta('⚠️ No se encontraron registros para: ' + valor, 'warning');
+          } else {
+            registrosBusquedaActual = response.registros;
+            let html = `<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Placa</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
+            registrosBusquedaActual.forEach((reg, idx) => {
+              const d = reg.datos || {};
+              html += `<tr><td>${escaparHTML(d.fechaRegistro||'')}</td><td>${escaparHTML(d.cedulaInfractor||'')}</td><td><strong>${escaparHTML(d.placa||'')}</strong></td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
+            });
+            html += `</tbody></table></div>`;
+            resultadosDiv.innerHTML = html;
+            new bootstrap.Modal(document.getElementById('modalResultados')).show();
+          }
+        })
+        .catch(error => {
+          clearTimeout(timeoutId);
+          btn.innerHTML = textoOriginal;
+          btn.disabled = false;
+          mostrarAlerta('❌ Error al buscar: ' + error.message, 'danger');
+        });
+    }
+
+    function cargarDatosEnFormulario(registro) {
+      const d = registro.datos;
+      const fila = registro.fila;
+      filaEditando = Number(fila);
+      document.getElementById('filaActual').value = Number(fila);
+
+      document.getElementById('cedulaInfractor').value = limpiarValor(d.cedulaInfractor);
+      document.getElementById('nombre').value = limpiarValor(d.nombre).toUpperCase();
+      document.getElementById('placa').value = limpiarValor(d.placa).toUpperCase();
+      document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo).toUpperCase();
+      document.getElementById('tipoInfraccion').value = limpiarValor(d.tipoInfraccion);
+      document.getElementById('tipoAgente').value = limpiarValor(d.tipoAgente);
+      document.getElementById('valorGrua').value = convertirNumero(d.valorGrua);
+      document.getElementById('valorParqueadero').value = convertirNumero(d.valorParqueadero);
+      document.getElementById('fechaPago').value = convertirFechaParaInput(d.fechaPago);
+
+      document.getElementById('modoEdicion').style.display = 'flex';
+      document.getElementById('textoModoEdicion').textContent = `MODO EDICIÓN: modificando el registro de la fila ${fila}.`;
+      document.getElementById('textoBotonGuardar').textContent = 'ACTUALIZAR';
+
+      calcularTotales();
+      mostrarAlerta('📝 Registro cargado para edición.', 'success');
+      
+      const tab = new bootstrap.Tab(document.getElementById('pills-form-tab'));
+      tab.show();
+    }
+
+    // ✅ CORREGIDO: Con timeout de seguridad y mejor manejo de errores
+    function cargarConsolidado() {
+      const loading = document.getElementById('loadingConsolidado');
+      const tabla = document.getElementById('contenedorTablaConsolidado');
+      const sinDatos = document.getElementById('sinDatosConsolidado');
+      
+      loading.style.display = 'block';
+      tabla.style.display = 'none';
+      sinDatos.style.display = 'none';
+
+      const timeoutId = setTimeout(() => {
+        console.error('⏱️ Timeout: El servidor tardó más de 20 segundos');
+        loading.style.display = 'none';
+        sinDatos.style.display = 'block';
+        mostrarAlerta('⚠️ El servidor tardó demasiado. Intente nuevamente.', 'warning');
+      }, 20000);
+
+      callGoogleScript('listarTodos')
+        .then(response => {
+          clearTimeout(timeoutId);
+          loading.style.display = 'none';
+          
+          console.log('📥 Respuesta consolidado:', response);
+          
+          if (!response || !response.success) {
+            sinDatos.style.display = 'block';
+            mostrarAlerta('❌ Error: ' + (response?.message || 'Respuesta inválida'), 'danger');
+            return;
+          }
+          
+          if (!response.registros || response.registros.length === 0) {
+            sinDatos.style.display = 'block';
+            mostrarAlerta('ℹ️ No hay registros en la base de datos', 'info');
+            return;
+          }
+
+          datosConsolidadoGlobal = response.registros;
+          datosFiltrados = [...datosConsolidadoGlobal];
+          
+          limpiarFiltrosUI();
+          renderizarTablaConsolidado(datosFiltrados);
+          mostrarAlerta(`✅ Se cargaron ${datosFiltrados.length} registros`, 'success');
+        })
+        .catch(error => {
+          clearTimeout(timeoutId);
+          loading.style.display = 'none';
+          sinDatos.style.display = 'block';
+          console.error('❌ Error al cargar consolidado:', error);
+          mostrarAlerta('❌ Error al cargar consolidado: ' + error.message, 'danger');
+        });
+    }
+
+    function renderizarTablaConsolidado(datos) {
+      const tbody = document.getElementById('tbodyConsolidado');
+      tbody.innerHTML = '';
+
+      if (datos.length === 0) {
+        document.getElementById('contenedorTablaConsolidado').style.display = 'none';
+        document.getElementById('sinDatosConsolidado').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('sinDatosConsolidado').style.display = 'none';
+      document.getElementById('contenedorTablaConsolidado').style.display = 'block';
+
+      let sumaGrua = 0, sumaParqueadero = 0, sumaTotal = 0;
+
+      datos.forEach(reg => {
+        const d = reg.datos || {};
+        const valGrua = convertirNumero(d.valorGrua);
+        const valParq = convertirNumero(d.valorParqueadero);
+        const valTot = convertirNumero(d.total);
+
+        sumaGrua += valGrua;
+        sumaParqueadero += valParq;
+        sumaTotal += valTot;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escaparHTML(d.cedulaInfractor || '')}</td>
+          <td>${escaparHTML((d.nombre || '').toUpperCase())}</td>
+          <td><strong>${escaparHTML((d.placa || '').toUpperCase())}</strong></td>
+          <td>${escaparHTML((d.numeroComparendo || '').toUpperCase())}</td>
+          <td>${escaparHTML(d.tipoInfraccion || '')}</td>
+          <td>${formatearFechaParaTabla(d.fechaPago)}</td>
+          <td class="text-end">${formatearMoneda(valGrua)}</td>
+          <td class="text-end">${formatearMoneda(valParq)}</td>
+          <td class="text-end fw-bold">${formatearMoneda(valTot)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('totalGralGrua').textContent = formatearMoneda(sumaGrua);
+      document.getElementById('totalGralParqueadero').textContent = formatearMoneda(sumaParqueadero);
+      document.getElementById('totalGralFinal').textContent = formatearMoneda(sumaTotal);
+    }
+
+    function aplicarFiltros() {
+      const fInicio = document.getElementById('filtroFechaInicio').value;
+      const fFin = document.getElementById('filtroFechaFin').value;
+      const fCedula = document.getElementById('filtroCedula').value.trim().toLowerCase();
+      const fPlaca = document.getElementById('filtroPlaca').value.trim().toUpperCase();
+
+      datosFiltrados = datosConsolidadoGlobal.filter(reg => {
+        const d = reg.datos || {};
+        let pass = true;
+
+        if (fCedula && !String(d.cedulaInfractor).toLowerCase().includes(fCedula)) pass = false;
+        if (fPlaca && !String(d.placa).toUpperCase().includes(fPlaca)) pass = false;
+
+        if (fInicio || fFin) {
+          let fechaPagoStr = d.fechaPago;
+          let fechaNormalizada = "";
+          
+          if (fechaPagoStr && typeof fechaPagoStr === 'string') {
+            if (fechaPagoStr.includes('-')) {
+              fechaNormalizada = fechaPagoStr;
+            } else if (fechaPagoStr.includes('/')) {
+              const parts = fechaPagoStr.split('/');
+              if (parts.length === 3) {
+                fechaNormalizada = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+              }
+            }
+          }
+
+          if (fInicio && fechaNormalizada && fechaNormalizada < fInicio) pass = false;
+          if (fFin && fechaNormalizada && fechaNormalizada > fFin) pass = false;
+        }
+        return pass;
+      });
+
+      renderizarTablaConsolidado(datosFiltrados);
+      mostrarAlerta(`🔍 Se encontraron ${datosFiltrados.length} registros con los filtros aplicados.`, 'info');
+    }
+
+    function limpiarFiltros() {
+      limpiarFiltrosUI();
+      datosFiltrados = [...datosConsolidadoGlobal];
+      renderizarTablaConsolidado(datosFiltrados);
+      mostrarAlerta('🧹 Filtros limpiados. Mostrando todos los registros.', 'info');
+    }
+
+    function limpiarFiltrosUI() {
+      document.getElementById('filtroFechaInicio').value = '';
+      document.getElementById('filtroFechaFin').value = '';
+      document.getElementById('filtroCedula').value = '';
+      document.getElementById('filtroPlaca').value = '';
+    }
+
+    function exportarExcel() {
+      if (datosFiltrados.length === 0) {
+        mostrarAlerta('⚠️ No hay datos para exportar.', 'warning');
+        return;
+      }
+      const tabla = document.getElementById("tablaConsolidado");
+      const libro = XLSX.utils.table_to_book(tabla, { sheet: "Consolidado" });
+      XLSX.writeFile(libro, "Consolidado_Comparendos_LaCeja.xlsx");
+      mostrarAlerta('✅ Archivo Excel descargado exitosamente.', 'success');
+    }
+
+    function exportarPDF() {
+      if (datosFiltrados.length === 0) {
+        mostrarAlerta('⚠️ No hay datos para exportar.', 'warning');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('l', 'mm', 'a4');
+
+      doc.setFontSize(16);
+      doc.text("Consolidado de Comparendos", 14, 15);
+      doc.setFontSize(10);
+      doc.text("Secretaría de Movilidad - Municipio de La Ceja", 14, 22);
+      doc.text("Fecha de generación: " + new Date().toLocaleDateString('es-CO'), 14, 28);
+
+      doc.autoTable({
+        html: '#tablaConsolidado',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [13, 110, 253], textColor: 255, fontStyle: 'bold' },
+        footStyles: { fillColor: [248, 249, 250], textColor: [0, 0, 0], fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+          6: { halign: 'right' },
+          7: { halign: 'right' },
+          8: { halign: 'right', fontStyle: 'bold' }
+        }
+      });
+
+      pdfBlobGlobal = doc.output('blob');
+      const pdfURL = URL.createObjectURL(pdfBlobGlobal);
+      document.getElementById('iframeVistaPreviaPDF').src = pdfURL;
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalVistaPreviaPDF'));
+      modal.show();
+      
+      mostrarAlerta('✅ Vista previa del PDF generada correctamente.', 'success');
+    }
+
+    function descargarPDFDesdeVistaPrevia() {
+      if (!pdfBlobGlobal) {
+        mostrarAlerta('⚠️ No hay PDF para descargar.', 'warning');
+        return;
+      }
+      const url = URL.createObjectURL(pdfBlobGlobal);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "Consolidado_Comparendos_LaCeja.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      mostrarAlerta('✅ PDF descargado exitosamente.', 'success');
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${tipo} alert-dismissible fade show alert-custom`;
+      alert.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+      container.appendChild(alert);
+      setTimeout(() => { if (alert.parentNode) alert.remove(); }, 4000);
+    }
+
+    function copiarObservaciones() {
+      const texto = document.getElementById('observacionesTexto').textContent;
+      if (texto.includes('Complete el formulario')) {
+        mostrarAlerta('⚠️ Complete el formulario primero.', 'warning');
+        return;
+      }
+      navigator.clipboard.writeText(texto).then(() => {
+        mostrarAlerta('✅ ¡Texto copiado al portapapeles!', 'success');
+      }).catch(() => {
+        mostrarAlerta('❌ Error al copiar.', 'danger');
+      });
+    }
+
+    function limpiarValor(valor) { return (valor === null || valor === undefined) ? '' : String(valor).trim(); }
+    
+    function convertirNumero(valor) {
+      if (valor === null || valor === undefined || valor === '') return 0;
+      if (typeof valor === 'number') return valor;
+      const texto = String(valor).replace(/\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+      const numero = parseFloat(texto);
+      return isNaN(numero) ? 0 : numero;
+    }
+
+    function convertirFechaParaInput(valor) {
+      if (!valor) return '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) return String(valor);
+      const texto = String(valor).trim();
+      let match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (match) return match[3] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[1]).padStart(2, '0');
+      return '';
+    }
+
+    function escaparHTML(valor) {
+      if (valor === null || valor === undefined) return '';
+      return String(valor).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

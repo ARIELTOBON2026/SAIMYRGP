@@ -689,17 +689,9 @@ function ejecutarBusqueda() {
     });
 }
 
-// ✅ CORREGIDO: Ahora carga correctamente tipo de infracción, tipo de agente y fecha de pago
 function cargarDatosEnFormulario(registro) {
     const d = registro.datos;
     const fila = registro.fila;
-
-    console.log('🔎 DEBUG - Datos recibidos para editar:', {
-        fila: fila,
-        tipoInfraccion: d.tipoInfraccion,
-        tipoAgente: d.tipoAgente,
-        fechaPago: d.fechaPago
-    });
 
     filaEditando = Number(fila);
     document.getElementById('filaActual').value = Number(fila);
@@ -710,27 +702,20 @@ function cargarDatosEnFormulario(registro) {
     document.getElementById('placa').value = limpiarValor(d.placa).toUpperCase();
     document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo).toUpperCase();
 
-    // ✅ CORREGIDO: Normalización de selects
+    // Normalización de selects para garantizar coincidencia exacta con las opciones del HTML
     const tipoInfraccionValor = normalizarTipoInfraccion(limpiarValor(d.tipoInfraccion));
     const tipoAgenteValor = normalizarTipoAgente(limpiarValor(d.tipoAgente));
 
     document.getElementById('tipoInfraccion').value = tipoInfraccionValor;
     document.getElementById('tipoAgente').value = tipoAgenteValor;
 
-    console.log('🔎 DEBUG - Valores normalizados:', {
-        tipoInfraccion: tipoInfraccionValor,
-        tipoAgente: tipoAgenteValor
-    });
-
     // Valores numéricos
     document.getElementById('valorGrua').value = convertirNumero(d.valorGrua);
     document.getElementById('valorParqueadero').value = convertirNumero(d.valorParqueadero);
 
-    // ✅ CORREGIDO: Fecha de pago
+    // Fecha de pago robusta
     const fechaPagoValor = convertirFechaParaInput(d.fechaPago);
     document.getElementById('fechaPago').value = fechaPagoValor;
-
-    console.log('🔎 DEBUG - Fecha de pago:', { original: d.fechaPago, convertido: fechaPagoValor });
 
     // UI
     document.getElementById('modoEdicion').style.display = 'flex';
@@ -744,27 +729,31 @@ function cargarDatosEnFormulario(registro) {
     tab.show();
 }
 
-// ✅ NUEVA FUNCIÓN: Normaliza el tipo de infracción para que coincida con las opciones del <select>
 function normalizarTipoInfraccion(valor) {
     if (!valor) return '';
-    const valorLower = String(valor).toLowerCase().trim();
+    const valorTrimmed = String(valor).trim();
+    const valorLower = valorTrimmed.toLowerCase();
     if (valorLower.includes('comparendo')) return 'Comparendo';
     if (valorLower.includes('accidente')) return 'Accidente';
-    console.warn('⚠️ Tipo de infracción no reconocido:', valor);
+    // Fallback: si ya coincide exactamente con la opción del select
+    if (valorTrimmed === 'Comparendo' || valorTrimmed === 'Accidente') return valorTrimmed;
     return '';
 }
 
-// ✅ NUEVA FUNCIÓN: Normaliza el tipo de agente para que coincida con las opciones del <select>
 function normalizarTipoAgente(valor) {
     if (!valor) return '';
-    const valorLower = String(valor).toLowerCase().trim();
+    const valorTrimmed = String(valor).trim();
+    const valorLower = valorTrimmed.toLowerCase();
     if (valorLower.includes('agentes de tránsito') || valorLower.includes('autoridades locales')) {
         return 'Agentes de Tránsito (Autoridades locales)';
     }
     if (valorLower.includes('policía') || valorLower.includes('transito y transporte')) {
         return 'Policía de Tránsito y Transporte';
     }
-    console.warn('⚠️ Tipo de agente no reconocido:', valor);
+    // Fallback: si ya coincide exactamente con la opción del select
+    if (valorTrimmed === 'Agentes de Tránsito (Autoridades locales)' || valorTrimmed === 'Policía de Tránsito y Transporte') {
+        return valorTrimmed;
+    }
     return '';
 }
 
@@ -784,7 +773,6 @@ function cargarConsolidado() {
     .then(response => {
         clearTimeout(timeoutId);
         loading.style.display = 'none';
-        console.log('📥 Respuesta consolidado:', response);
         if (!response || !response.success) {
             sinDatos.style.display = 'block';
             mostrarAlerta('❌ Error: ' + (response?.message || 'Respuesta inválida'), 'danger');
@@ -853,21 +841,16 @@ function aplicarFiltros() {
     const fFin = document.getElementById('filtroFechaFin').value;
     const fCedula = document.getElementById('filtroCedula').value.trim().toLowerCase();
     const fPlaca = document.getElementById('filtroPlaca').value.trim().toUpperCase();
+    
     datosFiltrados = datosConsolidadoGlobal.filter(reg => {
         const d = reg.datos || {};
         let pass = true;
         if (fCedula && !String(d.cedulaInfractor).toLowerCase().includes(fCedula)) pass = false;
         if (fPlaca && !String(d.placa).toUpperCase().includes(fPlaca)) pass = false;
+        
         if (fInicio || fFin) {
-            let fechaPagoStr = d.fechaPago;
-            let fechaNormalizada = "";
-            if (fechaPagoStr && typeof fechaPagoStr === 'string') {
-                if (fechaPagoStr.includes('-')) fechaNormalizada = fechaPagoStr;
-                else if (fechaPagoStr.includes('/')) {
-                    const parts = fechaPagoStr.split('/');
-                    if (parts.length === 3) fechaNormalizada = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-                }
-            }
+            // Reutilizamos la función robusta de conversión de fecha
+            let fechaNormalizada = convertirFechaParaInput(d.fechaPago);
             if (fInicio && fechaNormalizada && fechaNormalizada < fInicio) pass = false;
             if (fFin && fechaNormalizada && fechaNormalizada > fFin) pass = false;
         }
@@ -970,24 +953,32 @@ function convertirNumero(valor) {
     return isNaN(numero) ? 0 : numero;
 }
 
-// ✅ MEJORADA: Convierte cualquier formato de fecha a YYYY-MM-DD para el input type="date"
 function convertirFechaParaInput(valor) {
     if (!valor) return '';
     const texto = String(valor).trim();
 
-    // Ya está en formato YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
+    // 1. Ya está en formato YYYY-MM-DD (con o sin hora)
+    if (/^\d{4}-\d{2}-\d{2}/.test(texto)) {
+        return texto.split(' ')[0]; // Retorna solo YYYY-MM-DD
+    }
 
-    // Formato DD/MM/YYYY
-    let match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (match) return match[3] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[1]).padStart(2, '0');
+    // 2. Extraer solo la parte de la fecha si viene con hora (ej: "29/09/2026 15:30:00")
+    const soloFecha = texto.split(' ')[0];
 
-    // Formato YYYY/MM/DD
-    match = texto.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-    if (match) return match[1] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[3]).padStart(2, '0');
+    // 3. Formato DD/MM/YYYY
+    let match = soloFecha.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) {
+        return match[3] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[1]).padStart(2, '0');
+    }
 
-    // Intentar parsear como fecha
-    const fechaParseada = new Date(texto);
+    // 4. Formato YYYY/MM/DD
+    match = soloFecha.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+    if (match) {
+        return match[1] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[3]).padStart(2, '0');
+    }
+
+    // 5. Intentar parsear como fecha (fallback)
+    const fechaParseada = new Date(soloFecha);
     if (!isNaN(fechaParseada.getTime())) {
         const year = fechaParseada.getFullYear();
         const month = String(fechaParseada.getMonth() + 1).padStart(2, '0');

@@ -1,1008 +1,4671 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secretaría de Movilidad - La Ceja</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-<style>
-:root { --primary-color: #0d6efd; --bg-color: #f4f6f9; }
-body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #212529; padding-bottom: 2rem; }
-.app-header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 1.5rem 0; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15); text-align: center; }
-.app-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-.app-header p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
-.card { border: none; border-radius: 0.75rem; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 1.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-.card-header { background-color: #fff; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: #495057; padding: 1rem 1.25rem; border-radius: 0.75rem 0.75rem 0 0 !important; }
-.form-label { font-weight: 500; font-size: 0.85rem; color: #495057; margin-bottom: 0.35rem; }
-.form-control, .form-select { border-radius: 0.5rem; border: 1px solid #dee2e6; padding: 0.6rem 0.85rem; font-size: 0.95rem; transition: all 0.2s ease; }
-.form-control:focus, .form-select:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15); }
-.form-control[readonly] { background-color: #f8f9fa; }
-.icon-box { width: 64px; height: 64px; background-color: #e9ecef; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: #6c757d; flex-shrink: 0; }
-.icon-box img { max-width: 80%; max-height: 80%; object-fit: contain; }
-.modo-edicion { background-color: #fff3cd; border-left: 4px solid #ffc107; color: #856404; padding: 0.75rem 1rem; margin-bottom: 1.5rem; border-radius: 0 0.5rem 0.5rem 0; font-weight: 600; font-size: 0.9rem; display: none; align-items: center; gap: 0.5rem; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.15); }
-.observaciones-box { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.5rem; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.85rem; line-height: 1.5; color: #495057; min-height: 80px; white-space: pre-wrap; word-wrap: break-word; }
-.btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; min-width: 100px; }
-.btn-action i { font-size: 1.25rem; }
-.btn-action:hover { transform: translateY(-2px); }
-.alert-custom { box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); border: none; border-radius: 0.5rem; }
-.table-consolidado th { background-color: #f8f9fa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #495057; white-space: nowrap; vertical-align: middle; }
-.table-consolidado td { font-size: 0.85rem; vertical-align: middle; }
-@media (max-width: 768px) { .btn-action { min-width: 80px; font-size: 0.7rem; padding: 0.5rem; } .btn-action i { font-size: 1.1rem; } }
-</style>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Sistema de Gestión de Comparendos - La Ceja
+  </title>
+
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    rel="stylesheet"
+  >
+
+
+  <!-- Inter -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+
+  <!-- SheetJS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+  </script>
+
+
+  <!-- jsPDF -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  </script>
+
+
+  <!-- AutoTable -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js">
+  </script>
+
+
+  <style>
+
+    :root {
+      --primary: #0d6efd;
+      --secondary: #6c757d;
+      --success: #198754;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --dark: #212529;
+      --light: #f8f9fa;
+    }
+
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f9;
+      color: #212529;
+    }
+
+
+    .navbar-brand {
+      font-weight: 700;
+    }
+
+
+    .card {
+      border: none;
+      border-radius: 14px;
+      box-shadow:
+        0 3px 12px rgba(0, 0, 0, .08);
+    }
+
+
+    .card-header {
+      border-radius: 14px 14px 0 0 !important;
+      font-weight: 600;
+    }
+
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+    }
+
+
+    .form-control:focus,
+    .form-select:focus {
+      box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+    }
+
+
+    .btn {
+      border-radius: 8px;
+    }
+
+
+    .table {
+      font-size: .88rem;
+    }
+
+
+    .table thead th {
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+
+    .table tbody td {
+      vertical-align: middle;
+    }
+
+
+    .loading-container {
+      padding: 40px;
+      text-align: center;
+    }
+
+
+    .empty-container {
+      padding: 40px;
+      text-align: center;
+      color: #6c757d;
+    }
+
+
+    .stat-card {
+      transition: .2s;
+    }
+
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+
+    .modal-content {
+      border: none;
+      border-radius: 14px;
+    }
+
+
+    .money {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+
+    .pagination-consolidado {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+
+    .pagination-consolidado .btn {
+      min-width: 38px;
+    }
+
+
+    .pagination-info {
+      color: #6c757d;
+      font-size: .85rem;
+      margin-right: 10px;
+    }
+
+
+    .table-responsive {
+      min-height: 100px;
+    }
+
+
+    #alertas {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      width: min(420px, calc(100vw - 40px));
+    }
+
+  </style>
+
 </head>
+
+
 <body>
-<div class="container py-2">
-<div class="app-header rounded-3 px-4 d-flex flex-column align-items-center justify-content-center">
-<h1><i class="bi bi-shield-check me-2"></i>Secretaría de Movilidad</h1>
-<p>Municipio de La Ceja - Gestión de Comparendos</p>
-</div>
-<ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
-<li class="nav-item" role="presentation">
-<button class="nav-link active px-4" id="pills-form-tab" data-bs-toggle="pill" data-bs-target="#pills-form" type="button" role="tab">
-<i class="bi bi-file-earmark-text me-2"></i>Formulario
-</button>
-</li>
-<li class="nav-item" role="presentation">
-<button class="nav-link px-4" id="pills-consolidado-tab" data-bs-toggle="pill" data-bs-target="#pills-consolidado" type="button" role="tab" onclick="cargarConsolidado()">
-<i class="bi bi-table me-2"></i>Consolidado
-</button>
-</li>
-</ul>
-<div class="tab-content" id="pills-tabContent">
-<div class="tab-pane fade show active" id="pills-form" role="tabpanel">
-<form id="comparendoForm">
-<input type="hidden" id="filaActual" value="">
-<div id="modoEdicion" class="modo-edicion">
-<i class="bi bi-pencil-fill"></i>
-<span id="textoModoEdicion">MODO EDICIÓN: está modificando un registro existente.</span>
-</div>
-<div class="card">
-<div class="card-header"><i class="bi bi-person-vcard me-2"></i>Datos del Contribuyente</div>
-<div class="card-body">
-<div class="row g-3">
-<div class="col-md-4">
-<label for="cedulaInfractor" class="form-label">Nro. Identificación del Infractor *</label>
-<input type="text" class="form-control" id="cedulaInfractor" inputmode="numeric" autocomplete="off" required placeholder="Ej: 123456789">
-<div class="invalid-feedback" id="cedulaError"></div>
-</div>
-<div class="col-md-8">
-<label for="nombre" class="form-label">Nombre Infractor / Autorizado *</label>
-<input type="text" class="form-control" id="nombre" required placeholder="Nombre completo" oninput="this.value = this.value.toUpperCase()">
-</div>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-header"><i class="bi bi-car-front me-2"></i>Información del Comparendo</div>
-<div class="card-body">
-<div class="row g-3">
-<div class="col-md-3">
-<label for="placa" class="form-label">Placa *</label>
-<input type="text" class="form-control text-uppercase fw-bold text-center fs-5" id="placa" maxlength="6" required placeholder="ABC123" oninput="this.value = this.value.toUpperCase()">
-<div class="invalid-feedback" id="placaError"></div>
-</div>
-<div class="col-md-3">
-<label for="tipoInfraccion" class="form-label">Tipo de Infracción *</label>
-<select class="form-select" id="tipoInfraccion" required onchange="verificarTipoInfraccion()">
-<option value="">Seleccione...</option>
-<option value="Comparendo">Comparendo</option>
-<option value="Accidente">Accidente</option>
-</select>
-</div>
-<div class="col-md-3">
-<label for="tipoAgente" class="form-label">Tipo de Agente</label>
-<select class="form-select" id="tipoAgente" required onchange="autocompletarComparendo()">
-<option value="">Seleccione...</option>
-<option value="Agentes de Tránsito (Autoridades locales)">Agentes de Tránsito (Autoridades locales)</option>
-<option value="Policía de Tránsito y Transporte">Policía de Tránsito y Transporte</option>
-</select>
-</div>
-<div class="col-md-3">
-<label for="numeroComparendo" class="form-label">Nro. Comparendo</label>
-<input type="text" class="form-control" id="numeroComparendo" required placeholder="Número">
-</div>
-</div>
-</div>
-</div>
-<div class="row g-3">
-<div class="col-md-6">
-<div class="card h-100">
-<div class="card-header"><i class="bi bi-truck me-2"></i>Valores del Servicio</div>
-<div class="card-body">
-<div class="d-flex align-items-center gap-3 mb-3">
-<div class="icon-box">
-<img src="https://arieltobon2026.github.io/grua.png" alt="Grúa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-<i class="bi bi-truck-front-fill text-secondary" style="display:none;"></i>
-</div>
-<div class="flex-grow-1">
-<div class="mb-3">
-<label for="valorGrua" class="form-label">Valor Grúa</label>
-<div class="input-group">
-<span class="input-group-text">$</span>
-<input type="number" class="form-control" id="valorGrua" value="0" min="0" step="1" oninput="calcularTotales()">
-</div>
-</div>
-<div class="mb-0">
-<label for="valorParqueadero" class="form-label">Valor Parqueadero</label>
-<div class="input-group">
-<span class="input-group-text">$</span>
-<input type="number" class="form-control" id="valorParqueadero" value="0" min="0" step="1" oninput="calcularTotales()">
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="col-md-6">
-<div class="card h-100">
-<div class="card-header"><i class="bi bi-calculator me-2"></i>Resumen de Totales</div>
-<div class="card-body">
-<div class="row g-2">
-<div class="col-12 d-flex justify-content-between align-items-center bg-light p-2 rounded">
-<label for="subtotal" class="mb-0 fw-semibold small text-uppercase">Subtotal</label>
-<input type="text" class="form-control form-control-sm bg-transparent border-0 text-end fw-bold" id="subtotal" value="$ 0" readonly style="max-width: 120px;">
-</div>
-<div class="col-12 d-flex justify-content-between align-items-center bg-light p-2 rounded">
-<label for="iva" class="mb-0 fw-semibold small text-uppercase">IVA 19%</label>
-<input type="text" class="form-control form-control-sm bg-transparent border-0 text-end fw-bold" id="iva" value="$ 0" readonly style="max-width: 120px;">
-</div>
-<div class="col-12 text-center text-muted small my-1" style="letter-spacing: 2px;">**************************************</div>
-<div class="col-12 d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded border border-success border-opacity-25">
-<label for="total" class="mb-0 fw-bold text-success text-uppercase">Total Facturado</label>
-<input type="text" class="form-control bg-transparent border-0 text-end fw-bold text-success fs-5" id="total" value="$ 0" readonly style="max-width: 150px;">
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="card mt-3">
-<div class="card-header"><i class="bi bi-credit-card me-2"></i>Datos de Pago</div>
-<div class="card-body">
-<div class="row g-3">
-<div class="col-md-6">
-<label for="convenioPago" class="form-label">Convenio de Pago</label>
-<select class="form-select" id="convenioPago">
-<option value="13627">13627</option>
-</select>
-</div>
-<div class="col-md-6">
-<label for="fechaPago" class="form-label">Fecha de Pago *</label>
-<input type="date" class="form-control" id="fechaPago" required>
-</div>
-</div>
-</div>
-</div>
-<div class="card mt-3">
-<div class="card-header"><i class="bi bi-card-text me-2"></i>Observaciones Generadas</div>
-<div class="card-body">
-<div id="observacionesTexto" class="observaciones-box">Complete el formulario para generar el texto de observaciones...</div>
-</div>
-</div>
-<div class="d-flex flex-wrap justify-content-center gap-2 mt-4 pt-3 border-top">
-<button type="button" class="btn btn-outline-secondary btn-action" onclick="nuevoFormulario()">
-<i class="bi bi-file-earmark-plus"></i><span>Nuevo</span>
-</button>
-<button type="submit" class="btn btn-success btn-action">
-<i class="bi bi-save-fill"></i><span id="textoBotonGuardar">Guardar</span>
-</button>
-<button type="button" class="btn btn-warning btn-action" onclick="mostrarModalBusqueda()">
-<i class="bi bi-pencil-square"></i><span>Modificar</span>
-</button>
-<button type="button" class="btn btn-info btn-action text-white" onclick="mostrarModalBusqueda()">
-<i class="bi bi-search"></i><span>Buscar</span>
-</button>
-<button type="button" class="btn btn-secondary btn-action" onclick="copiarObservaciones()">
-<i class="bi bi-clipboard-fill"></i><span>Portapapeles</span>
-</button>
-</div>
-</form>
-</div>
-<div class="tab-pane fade" id="pills-consolidado" role="tabpanel">
-<div class="card mb-3 border-primary border-opacity-25">
-<div class="card-header bg-primary bg-opacity-10 text-primary">
-<i class="bi bi-funnel me-2"></i>Filtros de Consulta
-</div>
-<div class="card-body">
-<div class="row g-3">
-<div class="col-md-3">
-<label for="filtroFechaInicio" class="form-label">Fecha Pago (Inicio)</label>
-<input type="date" class="form-control" id="filtroFechaInicio">
-</div>
-<div class="col-md-3">
-<label for="filtroFechaFin" class="form-label">Fecha Pago (Fin)</label>
-<input type="date" class="form-control" id="filtroFechaFin">
-</div>
-<div class="col-md-3">
-<label for="filtroCedula" class="form-label">Cédula</label>
-<input type="text" class="form-control" id="filtroCedula" inputmode="numeric" placeholder="Buscar por cédula">
-</div>
-<div class="col-md-3">
-<label for="filtroPlaca" class="form-label">Placa</label>
-<input type="text" class="form-control text-uppercase" id="filtroPlaca" maxlength="6" placeholder="Buscar por placa">
-</div>
-<div class="col-12 d-flex gap-2 justify-content-end pt-2 border-top">
-<button class="btn btn-outline-secondary" onclick="limpiarFiltros()">
-<i class="bi bi-x-circle me-1"></i>Limpiar Filtros
-</button>
-<button class="btn btn-primary" onclick="aplicarFiltros()">
-<i class="bi bi-search me-1"></i>Aplicar Filtros
-</button>
-</div>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-<span><i class="bi bi-table me-2"></i>Resultados del Consolidado</span>
-<div class="d-flex gap-2">
-<button class="btn btn-success btn-sm" onclick="exportarExcel()">
-<i class="bi bi-file-earmark-excel me-1"></i> Excel
-</button>
-<button class="btn btn-danger btn-sm" onclick="exportarPDF()">
-<i class="bi bi-file-earmark-pdf me-1"></i> PDF
-</button>
-<button class="btn btn-primary btn-sm" onclick="cargarConsolidado()">
-<i class="bi bi-arrow-clockwise me-1"></i> Actualizar
-</button>
-</div>
-</div>
-<div class="card-body">
-<div id="loadingConsolidado" class="text-center py-5">
-<div class="spinner-border text-primary" role="status">
-<span class="visually-hidden">Cargando...</span>
-</div>
-<p class="mt-2 text-muted">Cargando datos del consolidado...</p>
-</div>
-<div class="table-responsive" id="contenedorTablaConsolidado" style="display: none;">
-<table class="table table-hover table-bordered table-consolidado" id="tablaConsolidado">
-<thead class="table-light">
-<tr>
-<th>Cédula</th>
-<th>Nombre</th>
-<th>Placa</th>
-<th>Nro. Comparendo</th>
-<th>Infracción</th>
-<th>Fecha Pago</th>
-<th class="text-end">Valor Grúa</th>
-<th class="text-end">Parqueadero</th>
-<th class="text-end">Total</th>
-</tr>
-</thead>
-<tbody id="tbodyConsolidado"></tbody>
-<tfoot class="table-group-divider fw-bold bg-light">
-<tr>
-<td colspan="6" class="text-end">TOTALES GENERALES:</td>
-<td class="text-end" id="totalGralGrua">$ 0</td>
-<td class="text-end" id="totalGralParqueadero">$ 0</td>
-<td class="text-end text-primary" id="totalGralFinal">$ 0</td>
-</tr>
-</tfoot>
-</table>
-</div>
-<div id="sinDatosConsolidado" class="text-center py-5 text-muted" style="display: none;">
-<i class="bi bi-inbox fs-1"></i>
-<p class="mt-2">No se encontraron registros que coincidan con los criterios.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div id="alertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
-</div>
 
-<div class="modal fade" id="modalBusqueda" tabindex="-1">
-<div class="modal-dialog modal-dialog-centered">
-<div class="modal-content border-0 shadow">
-<div class="modal-header bg-primary text-white">
-<h5 class="modal-title"><i class="bi bi-search me-2"></i>Buscar Comparendo</h5>
-<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body p-4">
-<div class="mb-3">
-<label for="valorBusqueda" class="form-label fw-semibold">Cédula o Placa a buscar</label>
-<input type="text" class="form-control form-control-lg" id="valorBusqueda" autocomplete="off" required placeholder="Ej: 123456789 o ABC123" style="text-transform: uppercase;">
-</div>
-</div>
-<div class="modal-footer bg-light">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-<button type="button" class="btn btn-primary" id="btnEjecutarBusqueda" onclick="ejecutarBusqueda()">
-<i class="bi bi-search me-1"></i>Buscar
-</button>
-</div>
-</div>
-</div>
-</div>
 
-<div class="modal fade" id="modalResultados" tabindex="-1">
-<div class="modal-dialog modal-lg modal-dialog-centered">
-<div class="modal-content border-0 shadow">
-<div class="modal-header bg-info text-white">
-<h5 class="modal-title"><i class="bi bi-list-check me-2"></i>Resultados de Búsqueda</h5>
-<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body p-4">
-<div id="resultadosBusqueda"></div>
-</div>
-<div class="modal-footer bg-light">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-</div>
-</div>
-</div>
-</div>
+  <!-- =================================================
+       NAVBAR
+  ================================================== -->
 
-<div class="modal fade" id="modalVistaPreviaPDF" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-<div class="modal-dialog modal-xl modal-dialog-centered">
-<div class="modal-content border-0 shadow">
-<div class="modal-header bg-primary text-white">
-<h5 class="modal-title"><i class="bi bi-file-earmark-pdf me-2"></i>Vista Previa del PDF</h5>
-<div class="d-flex gap-2">
-<button type="button" class="btn btn-light btn-sm" onclick="descargarPDFDesdeVistaPrevia()">
-<i class="bi bi-download me-1"></i>Descargar
-</button>
-<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-</div>
-</div>
-<div class="modal-body p-0" style="height: 80vh;">
-<iframe id="iframeVistaPreviaPDF" style="width: 100%; height: 100%; border: none;" src=""></iframe>
-</div>
-<div class="modal-footer bg-light">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-<i class="bi bi-x-circle me-1"></i>Cerrar
-</button>
-<button type="button" class="btn btn-primary" onclick="descargarPDFDesdeVistaPrevia()">
-<i class="bi bi-download me-1"></i>Descargar PDF
-</button>
-</div>
-</div>
-</div>
-</div>
+  <nav class="navbar navbar-dark bg-primary shadow-sm">
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSDml1DqpucevAuxi19Z8FnnogTnB460vNgJOtD66m6hbc52Rplf-80mDBwrvjvzDV/exec";
-let filaEditando = null;
-let registrosBusquedaActual = [];
-let datosConsolidadoGlobal = [];
-let datosFiltrados = [];
-let pdfBlobGlobal = null;
+    <div class="container-fluid">
 
-function callGoogleScript(accion, params = {}) {
-    const payload = { accion: accion, ...params };
-    console.log("📤 Solicitud a GAS:", payload);
-    const accionesLectura = ['buscar', 'listarTodos', 'obtenerRegistro'];
-    if (accionesLectura.includes(accion)) {
-        return new Promise((resolve, reject) => {
-            const callbackName = '__gasCallback_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-            const script = document.createElement('script');
-            let finalizado = false;
-            const limpiar = () => {
-                if (finalizado) return;
-                finalizado = true;
-                clearTimeout(timeoutId);
-                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-                if (script.parentNode) script.parentNode.removeChild(script);
-            };
-            const timeoutId = setTimeout(() => {
-                limpiar();
-                reject(new Error('Timeout: Google Apps Script tardó demasiado en responder.'));
-            }, 25000);
-            window[callbackName] = function(response) {
-                limpiar();
-                console.log("📥 Respuesta JSONP de GAS:", response);
-                if (!response || typeof response !== 'object') {
-                    reject(new Error('La respuesta del servidor no tiene un formato válido.'));
-                    return;
-                }
-                resolve(response);
-            };
-            script.onerror = function() {
-                limpiar();
-                reject(new Error('No se pudo conectar con Google Apps Script.'));
-            };
-            const query = new URLSearchParams();
-            query.set('accion', accion);
-            query.set('callback', callbackName);
-            query.set('_ts', Date.now().toString());
-            Object.keys(params || {}).forEach(key => {
-                const value = params[key];
-                if (value !== undefined && value !== null) {
-                    query.set(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-                }
-            });
-            script.src = SCRIPT_URL + '?' + query.toString();
-            script.async = true;
-            document.head.appendChild(script);
-        });
-    }
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
-    return fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-    })
-    .then(async response => {
-        clearTimeout(timeoutId);
-        const text = await response.text();
-        console.log("📥 Respuesta POST de GAS:", text.substring(0, 1000));
-        if (!response.ok) throw new Error('Error HTTP ' + response.status);
-        try { return JSON.parse(text); }
-        catch (e) { console.error('❌ Respuesta POST no JSON:', text); throw new Error('El servidor no devolvió JSON válido.'); }
-    })
-    .catch(error => {
-        clearTimeout(timeoutId);
-        if (error.name === 'AbortError') throw new Error('Timeout: Google Apps Script tardó demasiado.');
-        console.error('❌ Error POST a GAS:', error);
-        throw error instanceof Error ? error : new Error('No se pudo conectar con Google Apps Script.');
-    });
-}
+      <span class="navbar-brand">
+        <i class="bi bi-car-front-fill"></i>
+        Secretaría de Movilidad - La Ceja
+      </span>
 
-document.addEventListener('DOMContentLoaded', function() {
-    calcularTotales();
-    document.getElementById('comparendoForm').addEventListener('submit', guardarFormulario);
-    document.getElementById('comparendoForm').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); return false; }
-    });
-    document.getElementById('cedulaInfractor').addEventListener('blur', validarCedula);
-    document.getElementById('placa').addEventListener('blur', validarPlaca);
-    const campos = ['cedulaInfractor', 'nombre', 'placa', 'tipoInfraccion', 'numeroComparendo', 'tipoAgente', 'valorGrua', 'valorParqueadero', 'fechaPago'];
-    campos.forEach(campo => {
-        const elemento = document.getElementById(campo);
-        elemento.addEventListener('input', actualizarObservaciones);
-        elemento.addEventListener('change', actualizarObservaciones);
-    });
-    document.getElementById('valorBusqueda').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); ejecutarBusqueda(); }
-    });
-    const modalPDF = document.getElementById('modalVistaPreviaPDF');
-    if(modalPDF) {
-        modalPDF.addEventListener('hidden.bs.modal', function () {
-            const iframe = document.getElementById('iframeVistaPreviaPDF');
-            if (iframe && iframe.src) { URL.revokeObjectURL(iframe.src); iframe.src = ''; }
-            pdfBlobGlobal = null;
-        });
-    }
-});
+    </div>
 
-function verificarTipoInfraccion() {
-    const tipoInfraccion = document.getElementById('tipoInfraccion').value;
-    const tipoAgente = document.getElementById('tipoAgente');
-    const numeroComparendo = document.getElementById('numeroComparendo');
-    if (tipoInfraccion === 'Accidente') {
-        tipoAgente.value = 'Agentes de Tránsito (Autoridades locales)';
-        numeroComparendo.value = 'ACCIDENTE';
-    } else {
-        if (numeroComparendo.value === 'ACCIDENTE') {
-            numeroComparendo.value = '';
-            tipoAgente.value = '';
-        }
-    }
-    actualizarObservaciones();
-}
+  </nav>
 
-function autocompletarComparendo() {
-    const tipoInfraccion = document.getElementById('tipoInfraccion').value;
-    if (tipoInfraccion === 'Accidente') {
-        document.getElementById('tipoAgente').value = 'Agentes de Tránsito (Autoridades locales)';
-        document.getElementById('numeroComparendo').value = 'ACCIDENTE';
-        actualizarObservaciones();
-        return;
-    }
-    const tipoAgente = document.getElementById('tipoAgente').value;
-    const numeroComparendo = document.getElementById('numeroComparendo');
-    if (tipoAgente === 'Agentes de Tránsito (Autoridades locales)') numeroComparendo.value = '0537600000005734';
-    else if (tipoAgente === 'Policía de Tránsito y Transporte') numeroComparendo.value = 'p9999999900000';
-    else numeroComparendo.value = '';
-    actualizarObservaciones();
-}
 
-function calcularTotales() {
-    const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
-    const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
-    const total = valorGrua + valorParqueadero;
-    const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
-    const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
-    document.getElementById('subtotal').value = formatearMoneda(subtotal);
-    document.getElementById('iva').value = formatearMoneda(iva);
-    document.getElementById('total').value = formatearMoneda(total);
-    actualizarObservaciones();
-}
+  <!-- =================================================
+       ALERTAS
+  ================================================== -->
 
-function formatearMoneda(valor) {
-    return '$ ' + Number(valor || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
+  <div id="alertas"></div>
 
-function formatearFechaParaTabla(fechaStr) {
-    if (!fechaStr) return '-';
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) return fechaStr;
-    if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-        const [year, month, day] = fechaStr.split('-');
-        return `${day}/${month}/${year}`;
-    }
-    return fechaStr;
-}
 
-function actualizarObservaciones() {
-    const nombre = document.getElementById('nombre').value.trim().toUpperCase() || '[NOMBRE]';
-    const cedula = document.getElementById('cedulaInfractor').value.trim() || '[ID]';
-    const placa = document.getElementById('placa').value.trim().toUpperCase() || '[PLACA]';
-    const tipoInfraccion = document.getElementById('tipoInfraccion').value || '[INFRACCIÓN]';
-    const numeroComparendo = document.getElementById('numeroComparendo').value.trim().toUpperCase() || '[COMPARENDO]';
-    const tipoAgente = document.getElementById('tipoAgente').value || '[AGENTE]';
-    const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
-    const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
-    const fechaPago = document.getElementById('fechaPago').value || '[FECHA]';
-    const total = valorGrua + valorParqueadero;
-    const subtotal = total > 0 ? Math.round((total / 1.19) * 100) / 100 : 0;
-    const iva = total > 0 ? Math.round((total - subtotal) * 100) / 100 : 0;
-    document.getElementById('observacionesTexto').textContent =
-        `FACTURACIÓN GRUA Y PARQUEADERO, NOMBRE: ${nombre}, ID: ${cedula}, PLACA: ${placa}, INFRACCIÓN: ${tipoInfraccion}, COMPARENDO: ${numeroComparendo}, AGENTE: ${tipoAgente}, GRUA: ${formatearMoneda(valorGrua)}, PARQUEADERO: ${formatearMoneda(valorParqueadero)}, CONVENIO: 13627, SUBTOTAL: ${formatearMoneda(subtotal)}, IVA: ${formatearMoneda(iva)}, TOTAL: ${formatearMoneda(total)}, FECHA DE PAGO: ${fechaPago}`;
-}
+  <!-- =================================================
+       CONTENIDO
+  ================================================== -->
 
-function validarCedula() {
-    const cedula = document.getElementById('cedulaInfractor').value.trim();
-    if (!cedula || !/^\d{6,10}$/.test(cedula)) {
-        mostrarError('cedulaInfractor', 'La cédula debe tener entre 6 y 10 dígitos numéricos');
-        return false;
-    }
-    ocultarError('cedulaInfractor');
-    return true;
-}
+  <div class="container-fluid py-4">
 
-function validarPlaca() {
-    const placa = document.getElementById('placa').value.trim().toUpperCase();
-    if (!placa || (!/^[A-Z]{3}\d{3}$/.test(placa) && !/^[A-Z]{3}\d{2}[A-Z]$/.test(placa))) {
-        mostrarError('placa', 'Formato de placa inválido (ABC123 o ABC12D)');
-        return false;
-    }
-    ocultarError('placa');
-    return true;
-}
+    <!-- =================================================
+         TÍTULO
+    ================================================== -->
 
-function mostrarError(campo, mensaje) {
-    document.getElementById(campo).classList.add('is-invalid');
-    const errorDiv = document.getElementById(campo + 'Error');
-    if (errorDiv) { errorDiv.textContent = mensaje; errorDiv.style.display = 'block'; }
-}
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-function ocultarError(campo) {
-    document.getElementById(campo).classList.remove('is-invalid');
-    const errorDiv = document.getElementById(campo + 'Error');
-    if (errorDiv) errorDiv.style.display = 'none';
-}
+      <div>
 
-function nuevoFormulario() {
-    document.getElementById('comparendoForm').reset();
-    document.getElementById('filaActual').value = '';
-    filaEditando = null;
-    document.getElementById('modoEdicion').style.display = 'none';
-    document.getElementById('textoBotonGuardar').textContent = 'GUARDAR';
-    ocultarError('cedulaInfractor');
-    ocultarError('placa');
-    calcularTotales();
-    mostrarAlerta('📝 Formulario limpiado', 'info');
-}
+        <h3 class="fw-bold mb-1">
+          Sistema de Gestión de Comparendos
+        </h3>
 
-function guardarFormulario(e) {
-    e.preventDefault();
-    if (!validarCedula() || !validarPlaca()) return;
-    const valorGrua = parseFloat(document.getElementById('valorGrua').value) || 0;
-    const valorParqueadero = parseFloat(document.getElementById('valorParqueadero').value) || 0;
-    if (valorGrua === 0 && valorParqueadero === 0) {
-        mostrarAlerta('⚠️ Debe ingresar al menos un valor (Grúa o Parqueadero) mayor a cero.', 'warning');
-        return;
-    }
-    const datos = {
-        cedulaInfractor: document.getElementById('cedulaInfractor').value.trim(),
-        nombre: document.getElementById('nombre').value.trim().toUpperCase(),
-        placa: document.getElementById('placa').value.trim().toUpperCase(),
-        tipoInfraccion: document.getElementById('tipoInfraccion').value,
-        tipoAgente: document.getElementById('tipoAgente').value,
-        numeroComparendo: document.getElementById('numeroComparendo').value.trim().toUpperCase(),
-        valorGrua: valorGrua,
-        valorParqueadero: valorParqueadero,
-        fechaPago: document.getElementById('fechaPago').value,
-        resumenFacturacion: document.getElementById('observacionesTexto').textContent
-    };
-    datos.total = datos.valorGrua + datos.valorParqueadero;
-    const fila = document.getElementById('filaActual').value;
-    const btnGuardar = document.querySelector('button[type="submit"]');
-    const textoOriginal = btnGuardar.innerHTML;
-    btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + (fila ? 'Actualizando...' : 'Guardando...');
-    btnGuardar.disabled = true;
-    callGoogleScript(fila ? 'actualizar' : 'guardar', { fila: fila ? Number(fila) : null, datos: datos })
-    .then(response => {
-        btnGuardar.innerHTML = textoOriginal;
-        btnGuardar.disabled = false;
-        if (response.success) {
-            mostrarAlerta('✅ ' + response.message, 'success');
-            nuevoFormulario();
-            if (document.getElementById('pills-consolidado').classList.contains('show')) cargarConsolidado();
-        } else {
-            mostrarAlerta('❌ ' + response.message, 'danger');
-        }
-    })
-    .catch(error => {
-        btnGuardar.innerHTML = textoOriginal;
-        btnGuardar.disabled = false;
-        mostrarAlerta('❌ Error de conexión: ' + error.message, 'danger');
-    });
-}
+        <div class="text-muted">
+          Grúa y Parqueadero
+        </div>
 
-function mostrarModalBusqueda() {
-    document.getElementById('valorBusqueda').value = '';
-    new bootstrap.Modal(document.getElementById('modalBusqueda')).show();
-    setTimeout(() => { document.getElementById('valorBusqueda').focus(); }, 400);
-}
+      </div>
 
-function ejecutarBusqueda() {
-    const valor = document.getElementById('valorBusqueda').value.trim().toUpperCase();
-    if (valor.length < 3) {
-        mostrarAlerta('⚠️ Ingrese al menos 3 caracteres para buscar', 'warning');
-        return;
-    }
-    const btn = document.getElementById('btnEjecutarBusqueda');
-    const textoOriginal = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
-    btn.disabled = true;
-    const timeoutId = setTimeout(() => {
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-        mostrarAlerta('⚠️ La búsqueda tardó demasiado.', 'warning');
-    }, 10000);
-    callGoogleScript('buscar', { valor: valor })
-    .then(response => {
-        clearTimeout(timeoutId);
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-        bootstrap.Modal.getInstance(document.getElementById('modalBusqueda')).hide();
-        const resultadosDiv = document.getElementById('resultadosBusqueda');
-        if (!response || !response.success || !response.registros || response.registros.length === 0) {
-            resultadosDiv.innerHTML = `<div class="alert alert-warning text-center"><i class="bi bi-exclamation-triangle-fill me-2"></i>No se encontraron registros para: ${valor}</div>`;
-            mostrarAlerta('⚠️ No se encontraron registros para: ' + valor, 'warning');
-        } else {
-            registrosBusquedaActual = response.registros;
-            let html = `<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Placa</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
-            registrosBusquedaActual.forEach((reg, idx) => {
-                const d = reg.datos || {};
-                html += `<tr><td>${escaparHTML(d.fechaRegistro||'')}</td><td>${escaparHTML(d.cedulaInfractor||'')}</td><td><strong>${escaparHTML(d.placa||'')}</strong></td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
-            });
-            html += `</tbody></table></div>`;
-            resultadosDiv.innerHTML = html;
-            new bootstrap.Modal(document.getElementById('modalResultados')).show();
-        }
-    })
-    .catch(error => {
-        clearTimeout(timeoutId);
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-        mostrarAlerta('❌ Error al buscar: ' + error.message, 'danger');
-    });
-}
+    </div>
 
-// ✅ CORREGIDO: Ahora carga correctamente tipo de infracción, tipo de agente y fecha de pago
-function cargarDatosEnFormulario(registro) {
-    const d = registro.datos;
-    const fila = registro.fila;
 
-    console.log('🔎 DEBUG - Datos recibidos para editar:', {
-        fila: fila,
-        tipoInfraccion: d.tipoInfraccion,
-        tipoAgente: d.tipoAgente,
-        fechaPago: d.fechaPago
-    });
+    <!-- =================================================
+         PESTAÑAS
+    ================================================== -->
 
-    filaEditando = Number(fila);
-    document.getElementById('filaActual').value = Number(fila);
+    <ul
+      class="nav nav-pills mb-4"
+      id="pills-tab"
+      role="tablist"
+    >
 
-    // Campos de texto
-    document.getElementById('cedulaInfractor').value = limpiarValor(d.cedulaInfractor);
-    document.getElementById('nombre').value = limpiarValor(d.nombre).toUpperCase();
-    document.getElementById('placa').value = limpiarValor(d.placa).toUpperCase();
-    document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo).toUpperCase();
+      <li
+        class="nav-item"
+        role="presentation"
+      >
 
-    // ✅ CORREGIDO: Normalización de selects
-    const tipoInfraccionValor = normalizarTipoInfraccion(limpiarValor(d.tipoInfraccion));
-    const tipoAgenteValor = normalizarTipoAgente(limpiarValor(d.tipoAgente));
+        <button
+          class="nav-link active"
+          id="pills-registro-tab"
+          data-bs-toggle="pill"
+          data-bs-target="#pills-registro"
+          type="button"
+          role="tab"
+        >
 
-    document.getElementById('tipoInfraccion').value = tipoInfraccionValor;
-    document.getElementById('tipoAgente').value = tipoAgenteValor;
+          <i class="bi bi-pencil-square"></i>
+          Registro
 
-    console.log('🔎 DEBUG - Valores normalizados:', {
-        tipoInfraccion: tipoInfraccionValor,
-        tipoAgente: tipoAgenteValor
-    });
+        </button>
 
-    // Valores numéricos
-    document.getElementById('valorGrua').value = convertirNumero(d.valorGrua);
-    document.getElementById('valorParqueadero').value = convertirNumero(d.valorParqueadero);
+      </li>
 
-    // ✅ CORREGIDO: Fecha de pago
-    const fechaPagoValor = convertirFechaParaInput(d.fechaPago);
-    document.getElementById('fechaPago').value = fechaPagoValor;
 
-    console.log('🔎 DEBUG - Fecha de pago:', { original: d.fechaPago, convertido: fechaPagoValor });
+      <li
+        class="nav-item"
+        role="presentation"
+      >
 
-    // UI
-    document.getElementById('modoEdicion').style.display = 'flex';
-    document.getElementById('textoModoEdicion').textContent = `MODO EDICIÓN: modificando el registro de la fila ${fila}.`;
-    document.getElementById('textoBotonGuardar').textContent = 'ACTUALIZAR';
+        <button
+          class="nav-link"
+          id="pills-busqueda-tab"
+          data-bs-toggle="pill"
+          data-bs-target="#pills-busqueda"
+          type="button"
+          role="tab"
+        >
 
-    calcularTotales();
-    mostrarAlerta('📝 Registro cargado para edición.', 'success');
+          <i class="bi bi-search"></i>
+          Buscar
 
-    const tab = new bootstrap.Tab(document.getElementById('pills-form-tab'));
-    tab.show();
-}
+        </button>
 
-// ✅ NUEVA FUNCIÓN: Normaliza el tipo de infracción para que coincida con las opciones del <select>
-function normalizarTipoInfraccion(valor) {
-    if (!valor) return '';
-    const valorLower = String(valor).toLowerCase().trim();
-    if (valorLower.includes('comparendo')) return 'Comparendo';
-    if (valorLower.includes('accidente')) return 'Accidente';
-    console.warn('⚠️ Tipo de infracción no reconocido:', valor);
-    return '';
-}
+      </li>
 
-// ✅ NUEVA FUNCIÓN: Normaliza el tipo de agente para que coincida con las opciones del <select>
-function normalizarTipoAgente(valor) {
-    if (!valor) return '';
-    const valorLower = String(valor).toLowerCase().trim();
-    if (valorLower.includes('agentes de tránsito') || valorLower.includes('autoridades locales')) {
-        return 'Agentes de Tránsito (Autoridades locales)';
-    }
-    if (valorLower.includes('policía') || valorLower.includes('transito y transporte')) {
-        return 'Policía de Tránsito y Transporte';
-    }
-    console.warn('⚠️ Tipo de agente no reconocido:', valor);
-    return '';
-}
 
-function cargarConsolidado() {
-    const loading = document.getElementById('loadingConsolidado');
-    const tabla = document.getElementById('contenedorTablaConsolidado');
-    const sinDatos = document.getElementById('sinDatosConsolidado');
-    loading.style.display = 'block';
-    tabla.style.display = 'none';
-    sinDatos.style.display = 'none';
-    const timeoutId = setTimeout(() => {
-        loading.style.display = 'none';
-        sinDatos.style.display = 'block';
-        mostrarAlerta('⚠️ El servidor tardó demasiado. Intente nuevamente.', 'warning');
-    }, 20000);
-    callGoogleScript('listarTodos')
-    .then(response => {
-        clearTimeout(timeoutId);
-        loading.style.display = 'none';
-        console.log('📥 Respuesta consolidado:', response);
-        if (!response || !response.success) {
-            sinDatos.style.display = 'block';
-            mostrarAlerta('❌ Error: ' + (response?.message || 'Respuesta inválida'), 'danger');
-            return;
-        }
-        if (!response.registros || response.registros.length === 0) {
-            sinDatos.style.display = 'block';
-            mostrarAlerta('ℹ️ No hay registros en la base de datos', 'info');
-            return;
-        }
-        datosConsolidadoGlobal = response.registros;
-        datosFiltrados = [...datosConsolidadoGlobal];
-        limpiarFiltrosUI();
-        renderizarTablaConsolidado(datosFiltrados);
-        mostrarAlerta(`✅ Se cargaron ${datosFiltrados.length} registros`, 'success');
-    })
-    .catch(error => {
-        clearTimeout(timeoutId);
-        loading.style.display = 'none';
-        sinDatos.style.display = 'block';
-        console.error('❌ Error al cargar consolidado:', error);
-        mostrarAlerta('❌ Error al cargar consolidado: ' + error.message, 'danger');
-    });
-}
+      <li
+        class="nav-item"
+        role="presentation"
+      >
 
-function renderizarTablaConsolidado(datos) {
-    const tbody = document.getElementById('tbodyConsolidado');
-    tbody.innerHTML = '';
-    if (datos.length === 0) {
-        document.getElementById('contenedorTablaConsolidado').style.display = 'none';
-        document.getElementById('sinDatosConsolidado').style.display = 'block';
-        return;
-    }
-    document.getElementById('sinDatosConsolidado').style.display = 'none';
-    document.getElementById('contenedorTablaConsolidado').style.display = 'block';
-    let sumaGrua = 0, sumaParqueadero = 0, sumaTotal = 0;
-    datos.forEach(reg => {
-        const d = reg.datos || {};
-        const valGrua = convertirNumero(d.valorGrua);
-        const valParq = convertirNumero(d.valorParqueadero);
-        const valTot = convertirNumero(d.total);
-        sumaGrua += valGrua;
-        sumaParqueadero += valParq;
-        sumaTotal += valTot;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${escaparHTML(d.cedulaInfractor || '')}</td>
-            <td>${escaparHTML((d.nombre || '').toUpperCase())}</td>
-            <td><strong>${escaparHTML((d.placa || '').toUpperCase())}</strong></td>
-            <td>${escaparHTML((d.numeroComparendo || '').toUpperCase())}</td>
-            <td>${escaparHTML(d.tipoInfraccion || '')}</td>
-            <td>${formatearFechaParaTabla(d.fechaPago)}</td>
-            <td class="text-end">${formatearMoneda(valGrua)}</td>
-            <td class="text-end">${formatearMoneda(valParq)}</td>
-            <td class="text-end fw-bold">${formatearMoneda(valTot)}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-    document.getElementById('totalGralGrua').textContent = formatearMoneda(sumaGrua);
-    document.getElementById('totalGralParqueadero').textContent = formatearMoneda(sumaParqueadero);
-    document.getElementById('totalGralFinal').textContent = formatearMoneda(sumaTotal);
-}
+        <button
+          class="nav-link"
+          id="pills-consolidado-tab"
+          data-bs-toggle="pill"
+          data-bs-target="#pills-consolidado"
+          type="button"
+          role="tab"
+          onclick="cargarConsolidado(false)"
+        >
 
-function aplicarFiltros() {
-    const fInicio = document.getElementById('filtroFechaInicio').value;
-    const fFin = document.getElementById('filtroFechaFin').value;
-    const fCedula = document.getElementById('filtroCedula').value.trim().toLowerCase();
-    const fPlaca = document.getElementById('filtroPlaca').value.trim().toUpperCase();
-    datosFiltrados = datosConsolidadoGlobal.filter(reg => {
-        const d = reg.datos || {};
-        let pass = true;
-        if (fCedula && !String(d.cedulaInfractor).toLowerCase().includes(fCedula)) pass = false;
-        if (fPlaca && !String(d.placa).toUpperCase().includes(fPlaca)) pass = false;
-        if (fInicio || fFin) {
-            let fechaPagoStr = d.fechaPago;
-            let fechaNormalizada = "";
-            if (fechaPagoStr && typeof fechaPagoStr === 'string') {
-                if (fechaPagoStr.includes('-')) fechaNormalizada = fechaPagoStr;
-                else if (fechaPagoStr.includes('/')) {
-                    const parts = fechaPagoStr.split('/');
-                    if (parts.length === 3) fechaNormalizada = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-                }
+          <i class="bi bi-table"></i>
+          Consolidado
+
+        </button>
+
+      </li>
+
+    </ul>
+
+
+    <div
+      class="tab-content"
+      id="pills-tabContent"
+    >
+
+
+      <!-- =================================================
+           REGISTRO
+      ================================================== -->
+
+      <div
+        class="tab-pane fade show active"
+        id="pills-registro"
+        role="tabpanel"
+      >
+
+        <div class="card">
+
+          <div class="card-header bg-primary text-white">
+
+            <i class="bi bi-file-earmark-plus"></i>
+
+            Registro de Comparendo
+
+          </div>
+
+
+          <div class="card-body">
+
+            <form id="formRegistro">
+
+              <input
+                type="hidden"
+                id="filaEditando"
+              >
+
+
+              <div class="row g-3">
+
+
+                <!-- CÉDULA -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="cedulaInfractor"
+                    class="form-label"
+                  >
+                    Cédula
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="cedulaInfractor"
+                    required
+                  >
+
+                </div>
+
+
+                <!-- NOMBRE -->
+
+                <div class="col-md-8">
+
+                  <label
+                    for="nombre"
+                    class="form-label"
+                  >
+                    Nombre
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre"
+                    required
+                  >
+
+                </div>
+
+
+                <!-- PLACA -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="placa"
+                    class="form-label"
+                  >
+                    Placa
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control text-uppercase"
+                    id="placa"
+                    required
+                  >
+
+                </div>
+
+
+                <!-- TIPO INFRACCIÓN -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="tipoInfraccion"
+                    class="form-label"
+                  >
+                    Tipo de infracción
+                  </label>
+
+                  <select
+                    class="form-select"
+                    id="tipoInfraccion"
+                    required
+                  >
+
+                    <option value="">
+                      Seleccione...
+                    </option>
+
+                    <option value="Comparendo">
+                      Comparendo
+                    </option>
+
+                    <option value="Accidente">
+                      Accidente
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <!-- TIPO AGENTE -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="tipoAgente"
+                    class="form-label"
+                  >
+                    Tipo de agente
+                  </label>
+
+                  <select
+                    class="form-select"
+                    id="tipoAgente"
+                    required
+                  >
+
+                    <option value="">
+                      Seleccione...
+                    </option>
+
+                    <option value="Agentes de Tránsito (Autoridades locales)">
+                      Agentes de Tránsito (Autoridades locales)
+                    </option>
+
+                    <option value="Policía de Tránsito y Transporte">
+                      Policía de Tránsito y Transporte
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <!-- COMPARENDO -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="numeroComparendo"
+                    class="form-label"
+                  >
+                    Nro. Comparendo
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="numeroComparendo"
+                  >
+
+                </div>
+
+
+                <!-- FECHA REGISTRO -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="fechaRegistro"
+                    class="form-label"
+                  >
+                    Fecha registro
+                  </label>
+
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="fechaRegistro"
+                  >
+
+                </div>
+
+
+                <!-- FECHA PAGO -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="fechaPago"
+                    class="form-label"
+                  >
+                    Fecha pago
+                  </label>
+
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="fechaPago"
+                  >
+
+                </div>
+
+
+                <!-- GRÚA -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="valorGrua"
+                    class="form-label"
+                  >
+                    Valor grúa
+                  </label>
+
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="valorGrua"
+                    min="0"
+                    step="0.01"
+                  >
+
+                </div>
+
+
+                <!-- PARQUEADERO -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="valorParqueadero"
+                    class="form-label"
+                  >
+                    Valor parqueadero
+                  </label>
+
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="valorParqueadero"
+                    min="0"
+                    step="0.01"
+                  >
+
+                </div>
+
+
+                <!-- TOTAL -->
+
+                <div class="col-md-4">
+
+                  <label
+                    for="total"
+                    class="form-label"
+                  >
+                    Total
+                  </label>
+
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="total"
+                    readonly
+                  >
+
+                </div>
+
+
+                <!-- RESUMEN -->
+
+                <div class="col-12">
+
+                  <label
+                    for="resumenFacturacion"
+                    class="form-label"
+                  >
+                    Resumen facturación
+                  </label>
+
+                  <textarea
+                    class="form-control"
+                    id="resumenFacturacion"
+                    rows="4"
+                  ></textarea>
+
+                </div>
+
+
+                <!-- BOTONES -->
+
+                <div class="col-12">
+
+                  <div class="d-flex gap-2 flex-wrap">
+
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      id="btnGuardar"
+                    >
+
+                      <i class="bi bi-save"></i>
+
+                      Guardar
+
+                    </button>
+
+
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      onclick="nuevoFormulario()"
+                    >
+
+                      <i class="bi bi-eraser"></i>
+
+                      Limpiar
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           BÚSQUEDA
+      ================================================== -->
+
+      <div
+        class="tab-pane fade"
+        id="pills-busqueda"
+        role="tabpanel"
+      >
+
+        <div class="card">
+
+          <div class="card-header bg-primary text-white">
+
+            <i class="bi bi-search"></i>
+
+            Buscar registro
+
+          </div>
+
+
+          <div class="card-body">
+
+            <div class="row g-3">
+
+              <div class="col-md-8">
+
+                <label
+                  for="valorBusqueda"
+                  class="form-label"
+                >
+                  Cédula, nombre, placa o comparendo
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="valorBusqueda"
+                  placeholder="Ingrese mínimo 3 caracteres"
+                >
+
+              </div>
+
+
+              <div class="col-md-4 d-flex align-items-end">
+
+                <button
+                  class="btn btn-primary w-100"
+                  onclick="realizarBusqueda()"
+                >
+
+                  <i class="bi bi-search"></i>
+
+                  Buscar
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <div
+              id="loadingBusqueda"
+              class="loading-container"
+              style="display:none"
+            >
+
+              <div
+                class="spinner-border text-primary"
+                role="status"
+              ></div>
+
+              <div class="mt-2">
+                Buscando...
+              </div>
+
+            </div>
+
+
+            <div
+              id="resultadosBusqueda"
+              class="table-responsive mt-4"
+            ></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           CONSOLIDADO
+      ================================================== -->
+
+      <div
+        class="tab-pane fade"
+        id="pills-consolidado"
+        role="tabpanel"
+      >
+
+        <div class="card">
+
+          <div class="card-header bg-primary text-white">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+              <span>
+
+                <i class="bi bi-table"></i>
+
+                Resultados del Consolidado
+
+              </span>
+
+
+              <button
+                type="button"
+                class="btn btn-light btn-sm"
+                onclick="cargarConsolidado(true)"
+              >
+
+                <i class="bi bi-arrow-clockwise"></i>
+
+                Actualizar
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+
+            <!-- FILTROS -->
+
+            <div class="row g-3 mb-3">
+
+
+              <div class="col-md-3">
+
+                <label
+                  class="form-label"
+                  for="filtroFechaInicio"
+                >
+                  Fecha pago desde
+                </label>
+
+                <input
+                  type="date"
+                  class="form-control"
+                  id="filtroFechaInicio"
+                >
+
+              </div>
+
+
+              <div class="col-md-3">
+
+                <label
+                  class="form-label"
+                  for="filtroFechaFin"
+                >
+                  Fecha pago hasta
+                </label>
+
+                <input
+                  type="date"
+                  class="form-control"
+                  id="filtroFechaFin"
+                >
+
+              </div>
+
+
+              <div class="col-md-3">
+
+                <label
+                  class="form-label"
+                  for="filtroCedula"
+                >
+                  Cédula
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="filtroCedula"
+                >
+
+              </div>
+
+
+              <div class="col-md-3">
+
+                <label
+                  class="form-label"
+                  for="filtroPlaca"
+                >
+                  Placa
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control text-uppercase"
+                  id="filtroPlaca"
+                >
+
+              </div>
+
+
+              <div class="col-12">
+
+                <div class="d-flex gap-2 flex-wrap">
+
+                  <button
+                    class="btn btn-primary"
+                    onclick="aplicarFiltros()"
+                  >
+
+                    <i class="bi bi-funnel"></i>
+
+                    Aplicar filtros
+
+                  </button>
+
+
+                  <button
+                    class="btn btn-outline-secondary"
+                    onclick="limpiarFiltros()"
+                  >
+
+                    <i class="bi bi-x-circle"></i>
+
+                    Limpiar filtros
+
+                  </button>
+
+
+                  <button
+                    class="btn btn-success"
+                    onclick="exportarExcel()"
+                  >
+
+                    <i class="bi bi-file-earmark-excel"></i>
+
+                    Excel
+
+                  </button>
+
+
+                  <button
+                    class="btn btn-danger"
+                    onclick="exportarPDF()"
+                  >
+
+                    <i class="bi bi-file-earmark-pdf"></i>
+
+                    PDF
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- LOADING -->
+
+            <div
+              id="loadingConsolidado"
+              class="loading-container"
+              style="display:none"
+            >
+
+              <div
+                class="spinner-border text-primary"
+                role="status"
+              ></div>
+
+              <div class="mt-2">
+                Cargando consolidado...
+              </div>
+
+              <small class="text-muted">
+                Procesando información, por favor espere.
+              </small>
+
+            </div>
+
+
+            <!-- SIN DATOS -->
+
+            <div
+              id="sinDatosConsolidado"
+              class="empty-container"
+              style="display:none"
+            >
+
+              <i
+                class="bi bi-database-x"
+                style="font-size:40px"
+              ></i>
+
+              <div class="mt-2">
+                No hay datos para mostrar.
+              </div>
+
+            </div>
+
+
+            <!-- TABLA -->
+
+            <div
+              id="contenedorTablaConsolidado"
+              class="table-responsive"
+              style="display:none"
+            >
+
+              <table
+                class="table table-bordered table-hover table-striped"
+                id="tablaConsolidado"
+              >
+
+                <thead class="table-primary">
+
+                  <tr>
+
+                    <th>Cédula</th>
+
+                    <th>Nombre</th>
+
+                    <th>Placa</th>
+
+                    <th>Nro. Comparendo</th>
+
+                    <th>Infracción</th>
+
+                    <th>Fecha Pago</th>
+
+                    <th class="text-end">
+                      Valor Grúa
+                    </th>
+
+                    <th class="text-end">
+                      Parqueadero
+                    </th>
+
+                    <th class="text-end">
+                      Total
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+
+                <tbody id="tbodyConsolidado">
+                </tbody>
+
+
+                <tfoot>
+
+                  <tr class="table-secondary fw-bold">
+
+                    <td
+                      colspan="6"
+                      class="text-end"
+                    >
+                      TOTALES
+                    </td>
+
+                    <td
+                      class="text-end"
+                      id="totalGruaConsolidado"
+                    >
+                      $0
+                    </td>
+
+                    <td
+                      class="text-end"
+                      id="totalParqueaderoConsolidado"
+                    >
+                      $0
+                    </td>
+
+                    <td
+                      class="text-end"
+                      id="totalGeneralConsolidado"
+                    >
+                      $0
+                    </td>
+
+                  </tr>
+
+                </tfoot>
+
+              </table>
+
+            </div>
+
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =================================================
+       MODAL BÚSQUEDA
+  ================================================== -->
+
+  <div
+    class="modal fade"
+    id="modalBusqueda"
+    tabindex="-1"
+  >
+
+    <div class="modal-dialog modal-xl">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+            Resultados de búsqueda
+          </h5>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+
+        </div>
+
+
+        <div
+          class="modal-body"
+          id="modalResultadosBusqueda"
+        ></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Bootstrap -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+
+  <script>
+
+    /***************************************************
+     * CONFIGURACIÓN
+     ***************************************************/
+
+    const SCRIPT_URL =
+      'https://script.google.com/macros/s/AKfycbwHrtQUBFv_frptRAPuJ7hCrhHcB4qpJTGKQJ0T8S0jY871BeMcXpxN4pNQxt8O7LP4/exec';
+
+
+    /*
+     * Acciones que utilizan GET + JSONP.
+     */
+    const ACCIONES_LECTURA = [
+      'buscar',
+      'listarTodos',
+      'consolidado',
+      'obtenerRegistro',
+      'ping'
+    ];
+
+
+    /*
+     * Variables generales.
+     */
+    let filaEditando = null;
+
+    let registrosBusquedaActual = [];
+
+    let datosConsolidadoGlobal = [];
+
+    let datosFiltrados = [];
+
+    let pdfBlobGlobal = null;
+
+
+    /*
+     * Control del consolidado.
+     */
+    let consolidadoCargado = false;
+
+    let consolidadoCargando = false;
+
+    let paginaConsolidado = 1;
+
+    const REGISTROS_POR_PAGINA = 50;
+
+
+    /*
+     * Caché local del navegador.
+     *
+     * Se utiliza durante 60 segundos.
+     */
+    const CACHE_LOCAL_KEY =
+      'comparendos_consolidado_v3';
+
+    const CACHE_LOCAL_MS =
+      60 * 1000;
+
+
+    /***************************************************
+     * DOM READY
+     ***************************************************/
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function () {
+
+        establecerFechaActual();
+
+        calcularTotales();
+
+        configurarEventos();
+
+      }
+    );
+
+
+    /***************************************************
+     * CONFIGURAR EVENTOS
+     ***************************************************/
+
+    function configurarEventos() {
+
+
+      const form =
+        document.getElementById(
+          'formRegistro'
+        );
+
+
+      if (form) {
+
+        form.addEventListener(
+          'submit',
+          guardarFormulario
+        );
+      }
+
+
+      const tipoInfraccion =
+        document.getElementById(
+          'tipoInfraccion'
+        );
+
+
+      if (tipoInfraccion) {
+
+        tipoInfraccion.addEventListener(
+          'change',
+          actualizarNumeroComparendo
+        );
+      }
+
+
+      const tipoAgente =
+        document.getElementById(
+          'tipoAgente'
+        );
+
+
+      if (tipoAgente) {
+
+        tipoAgente.addEventListener(
+          'change',
+          actualizarNumeroComparendo
+        );
+      }
+
+
+      const valorGrua =
+        document.getElementById(
+          'valorGrua'
+        );
+
+
+      const valorParqueadero =
+        document.getElementById(
+          'valorParqueadero'
+        );
+
+
+      if (valorGrua) {
+
+        valorGrua.addEventListener(
+          'input',
+          calcularTotales
+        );
+      }
+
+
+      if (valorParqueadero) {
+
+        valorParqueadero.addEventListener(
+          'input',
+          calcularTotales
+        );
+      }
+
+
+      const fechaPago =
+        document.getElementById(
+          'fechaPago'
+        );
+
+
+      if (fechaPago) {
+
+        fechaPago.addEventListener(
+          'change',
+          actualizarObservaciones
+        );
+      }
+
+
+      const cedula =
+        document.getElementById(
+          'cedulaInfractor'
+        );
+
+
+      if (cedula) {
+
+        cedula.addEventListener(
+          'input',
+          function () {
+
+            this.value =
+              this.value.replace(
+                /\D/g,
+                ''
+              );
+
+          }
+        );
+      }
+
+
+      const placa =
+        document.getElementById(
+          'placa'
+        );
+
+
+      if (placa) {
+
+        placa.addEventListener(
+          'input',
+          function () {
+
+            this.value =
+              this.value
+                .toUpperCase()
+                .trim();
+
+          }
+        );
+      }
+
+
+      /*
+       * Enter en búsqueda.
+       */
+      const busqueda =
+        document.getElementById(
+          'valorBusqueda'
+        );
+
+
+      if (busqueda) {
+
+        busqueda.addEventListener(
+          'keydown',
+          function (event) {
+
+            if (event.key === 'Enter') {
+
+              event.preventDefault();
+
+              realizarBusqueda();
             }
-            if (fInicio && fechaNormalizada && fechaNormalizada < fInicio) pass = false;
-            if (fFin && fechaNormalizada && fechaNormalizada > fFin) pass = false;
+          }
+        );
+      }
+
+
+      /*
+       * Enter en filtros.
+       */
+      [
+        'filtroFechaInicio',
+        'filtroFechaFin',
+        'filtroCedula',
+        'filtroPlaca'
+      ].forEach(
+        function (id) {
+
+          const elemento =
+            document.getElementById(id);
+
+
+          if (!elemento) {
+            return;
+          }
+
+
+          elemento.addEventListener(
+            'keydown',
+            function (event) {
+
+              if (event.key === 'Enter') {
+
+                event.preventDefault();
+
+                aplicarFiltros();
+              }
+            }
+          );
+
         }
-        return pass;
-    });
-    renderizarTablaConsolidado(datosFiltrados);
-    mostrarAlerta(`🔍 Se encontraron ${datosFiltrados.length} registros con los filtros aplicados.`, 'info');
-}
+      );
+    }
 
-function limpiarFiltros() {
-    limpiarFiltrosUI();
-    datosFiltrados = [...datosConsolidadoGlobal];
-    renderizarTablaConsolidado(datosFiltrados);
-    mostrarAlerta('🧹 Filtros limpiados. Mostrando todos los registros.', 'info');
-}
 
-function limpiarFiltrosUI() {
-    document.getElementById('filtroFechaInicio').value = '';
-    document.getElementById('filtroFechaFin').value = '';
-    document.getElementById('filtroCedula').value = '';
-    document.getElementById('filtroPlaca').value = '';
-}
+    /***************************************************
+     * LLAMAR GOOGLE APPS SCRIPT
+     ***************************************************/
 
-function exportarExcel() {
-    if (datosFiltrados.length === 0) { mostrarAlerta('⚠️ No hay datos para exportar.', 'warning'); return; }
-    const tabla = document.getElementById("tablaConsolidado");
-    const libro = XLSX.utils.table_to_book(tabla, { sheet: "Consolidado" });
-    XLSX.writeFile(libro, "Consolidado_Comparendos_LaCeja.xlsx");
-    mostrarAlerta('✅ Archivo Excel descargado exitosamente.', 'success');
-}
+    function callGoogleScript(
+      accion,
+      params = {}
+    ) {
 
-function exportarPDF() {
-    if (datosFiltrados.length === 0) { mostrarAlerta('⚠️ No hay datos para exportar.', 'warning'); return; }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
-    doc.setFontSize(16);
-    doc.text("Consolidado de Comparendos", 14, 15);
-    doc.setFontSize(10);
-    doc.text("Secretaría de Movilidad - Municipio de La Ceja", 14, 22);
-    doc.text("Fecha de generación: " + new Date().toLocaleDateString('es-CO'), 14, 28);
-    doc.autoTable({
-        html: '#tablaConsolidado',
-        startY: 35,
-        theme: 'grid',
-        headStyles: { fillColor: [13, 110, 253], textColor: 255, fontStyle: 'bold' },
-        footStyles: { fillColor: [248, 249, 250], textColor: [0, 0, 0], fontStyle: 'bold' },
-        styles: { fontSize: 8, cellPadding: 2 },
-        columnStyles: { 6: { halign: 'right' }, 7: { halign: 'right' }, 8: { halign: 'right', fontStyle: 'bold' } }
-    });
-    pdfBlobGlobal = doc.output('blob');
-    const pdfURL = URL.createObjectURL(pdfBlobGlobal);
-    document.getElementById('iframeVistaPreviaPDF').src = pdfURL;
-    const modal = new bootstrap.Modal(document.getElementById('modalVistaPreviaPDF'));
-    modal.show();
-    mostrarAlerta('✅ Vista previa del PDF generada correctamente.', 'success');
-}
+      return new Promise(
+        function (resolve, reject) {
 
-function descargarPDFDesdeVistaPrevia() {
-    if (!pdfBlobGlobal) { mostrarAlerta('⚠️ No hay PDF para descargar.', 'warning'); return; }
-    const url = URL.createObjectURL(pdfBlobGlobal);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = "Consolidado_Comparendos_LaCeja.pdf";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    mostrarAlerta('✅ PDF descargado exitosamente.', 'success');
-}
+          if (
+            ACCIONES_LECTURA.includes(
+              accion
+            )
+          ) {
 
-function mostrarAlerta(mensaje, tipo) {
-    const container = document.getElementById('alertContainer');
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${tipo} alert-dismissible fade show alert-custom`;
-    alert.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-    container.appendChild(alert);
-    setTimeout(() => { if (alert.parentNode) alert.remove(); }, 4000);
-}
+            llamarGET(
+              accion,
+              params,
+              resolve,
+              reject
+            );
 
-function copiarObservaciones() {
-    const texto = document.getElementById('observacionesTexto').textContent;
-    if (texto.includes('Complete el formulario')) {
-        mostrarAlerta('⚠️ Complete el formulario primero.', 'warning');
+            return;
+          }
+
+
+          llamarPOST(
+            accion,
+            params,
+            resolve,
+            reject
+          );
+
+        }
+      );
+    }
+
+
+    /***************************************************
+     * GET JSONP
+     ***************************************************/
+
+    function llamarGET(
+      accion,
+      params,
+      resolve,
+      reject
+    ) {
+
+      const callbackName =
+        'callback_' +
+        Date.now() +
+        '_' +
+        Math.floor(
+          Math.random() * 100000
+        );
+
+
+      const script =
+        document.createElement(
+          'script'
+        );
+
+
+      let terminado = false;
+
+
+      const timeout =
+        setTimeout(
+          function () {
+
+            if (terminado) {
+              return;
+            }
+
+
+            terminado = true;
+
+
+            limpiar();
+
+
+            reject(
+              new Error(
+                'El servidor tardó demasiado en responder.'
+              )
+            );
+
+          },
+          accion === 'consolidado'
+            ? 25000
+            : 15000
+        );
+
+
+      window[callbackName] =
+        function (respuesta) {
+
+          if (terminado) {
+            return;
+          }
+
+
+          terminado = true;
+
+
+          clearTimeout(
+            timeout
+          );
+
+
+          limpiar();
+
+
+          resolve(respuesta);
+        };
+
+
+      function limpiar() {
+
+        try {
+
+          if (script.parentNode) {
+
+            script.parentNode.removeChild(
+              script
+            );
+          }
+
+        } catch (error) {}
+
+
+        try {
+
+          delete window[
+            callbackName
+          ];
+
+        } catch (error) {
+
+          window[
+            callbackName
+          ] = undefined;
+        }
+      }
+
+
+      const url =
+        new URL(
+          SCRIPT_URL
+        );
+
+
+      url.searchParams.set(
+        'accion',
+        accion
+      );
+
+
+      url.searchParams.set(
+        'callback',
+        callbackName
+      );
+
+
+      url.searchParams.set(
+        '_ts',
+        Date.now()
+      );
+
+
+      Object.keys(params || {})
+        .forEach(
+          function (key) {
+
+            if (
+              params[key] !== undefined &&
+              params[key] !== null
+            ) {
+
+              url.searchParams.set(
+                key,
+                params[key]
+              );
+            }
+
+          }
+        );
+
+
+      script.src =
+        url.toString();
+
+
+      script.async = true;
+
+
+      script.onerror =
+        function () {
+
+          if (terminado) {
+            return;
+          }
+
+
+          terminado = true;
+
+
+          clearTimeout(
+            timeout
+          );
+
+
+          limpiar();
+
+
+          reject(
+            new Error(
+              'No fue posible comunicarse con Apps Script.'
+            )
+          );
+        };
+
+
+      document.body.appendChild(
+        script
+      );
+    }
+
+
+    /***************************************************
+     * POST
+     ***************************************************/
+
+    async function llamarPOST(
+      accion,
+      params
+    ) {
+
+      const respuesta =
+        await fetch(
+          SCRIPT_URL,
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'text/plain;charset=utf-8'
+            },
+
+            body: JSON.stringify({
+              accion: accion,
+              ...params
+            })
+          }
+        );
+
+
+      if (!respuesta.ok) {
+
+        throw new Error(
+          'Error HTTP ' +
+          respuesta.status
+        );
+      }
+
+
+      return await respuesta.json();
+    }
+
+
+    /***************************************************
+     * FECHA ACTUAL
+     ***************************************************/
+
+    function establecerFechaActual() {
+
+      const elemento =
+        document.getElementById(
+          'fechaRegistro'
+        );
+
+
+      if (
+        elemento &&
+        !elemento.value
+      ) {
+
+        const hoy =
+          new Date();
+
+
+        elemento.value =
+          hoy.toISOString()
+            .substring(
+              0,
+              10
+            );
+      }
+    }
+
+
+    /***************************************************
+     * ACTUALIZAR COMPARENDO
+     ***************************************************/
+
+    function actualizarNumeroComparendo() {
+
+      const tipo =
+        document.getElementById(
+          'tipoInfraccion'
+        )?.value || '';
+
+
+      const agente =
+        document.getElementById(
+          'tipoAgente'
+        )?.value || '';
+
+
+      const campo =
+        document.getElementById(
+          'numeroComparendo'
+        );
+
+
+      if (!campo) {
         return;
-    }
-    navigator.clipboard.writeText(texto).then(() => {
-        mostrarAlerta('✅ ¡Texto copiado al portapapeles!', 'success');
-    }).catch(() => {
-        mostrarAlerta('❌ Error al copiar.', 'danger');
-    });
-}
+      }
 
-function limpiarValor(valor) { return (valor === null || valor === undefined) ? '' : String(valor).trim(); }
 
-function convertirNumero(valor) {
-    if (valor === null || valor === undefined || valor === '') return 0;
-    if (typeof valor === 'number') return valor;
-    const texto = String(valor).replace(/\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
-    const numero = parseFloat(texto);
-    return isNaN(numero) ? 0 : numero;
-}
+      /*
+       * No sobrescribir un valor que el usuario
+       * haya digitado manualmente.
+       *
+       * Se mantiene vacío si no corresponde.
+       */
+      if (
+        !tipo &&
+        !agente
+      ) {
 
-// ✅ MEJORADA: Convierte cualquier formato de fecha a YYYY-MM-DD para el input type="date"
-function convertirFechaParaInput(valor) {
-    if (!valor) return '';
-    const texto = String(valor).trim();
-
-    // Ya está en formato YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
-
-    // Formato DD/MM/YYYY
-    let match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (match) return match[3] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[1]).padStart(2, '0');
-
-    // Formato YYYY/MM/DD
-    match = texto.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-    if (match) return match[1] + '-' + String(match[2]).padStart(2, '0') + '-' + String(match[3]).padStart(2, '0');
-
-    // Intentar parsear como fecha
-    const fechaParseada = new Date(texto);
-    if (!isNaN(fechaParseada.getTime())) {
-        const year = fechaParseada.getFullYear();
-        const month = String(fechaParseada.getMonth() + 1).padStart(2, '0');
-        const day = String(fechaParseada.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return;
+      }
     }
 
-    console.warn('⚠️ No se pudo convertir la fecha:', valor);
-    return '';
-}
 
-function escaparHTML(valor) {
-    if (valor === null || valor === undefined) return '';
-    return String(valor).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-</script>
+    /***************************************************
+     * CALCULAR TOTALES
+     ***************************************************/
+
+    function calcularTotales() {
+
+      const grua =
+        convertirNumero(
+          document.getElementById(
+            'valorGrua'
+          )?.value
+        );
+
+
+      const parqueadero =
+        convertirNumero(
+          document.getElementById(
+            'valorParqueadero'
+          )?.value
+        );
+
+
+      const total =
+        grua +
+        parqueadero;
+
+
+      const campoTotal =
+        document.getElementById(
+          'total'
+        );
+
+
+      if (campoTotal) {
+
+        campoTotal.value =
+          total.toFixed(2);
+      }
+
+
+      actualizarObservaciones();
+    }
+
+
+    /***************************************************
+     * OBSERVACIONES
+     ***************************************************/
+
+    function actualizarObservaciones() {
+
+      const campo =
+        document.getElementById(
+          'resumenFacturacion'
+        );
+
+
+      if (!campo) {
+        return;
+      }
+
+
+      const grua =
+        convertirNumero(
+          document.getElementById(
+            'valorGrua'
+          )?.value
+        );
+
+
+      const parqueadero =
+        convertirNumero(
+          document.getElementById(
+            'valorParqueadero'
+          )?.value
+        );
+
+
+      const total =
+        grua +
+        parqueadero;
+
+
+      if (
+        grua === 0 &&
+        parqueadero === 0
+      ) {
+
+        campo.value = '';
+
+        return;
+      }
+
+
+      const subtotal =
+        total / 1.19;
+
+
+      const iva =
+        total -
+        subtotal;
+
+
+      campo.value =
+        'Valor grúa: ' +
+        formatearMoneda(grua) +
+        '\n' +
+
+        'Valor parqueadero: ' +
+        formatearMoneda(parqueadero) +
+        '\n' +
+
+        'Subtotal: ' +
+        formatearMoneda(subtotal) +
+        '\n' +
+
+        'IVA: ' +
+        formatearMoneda(iva) +
+        '\n' +
+
+        'Total: ' +
+        formatearMoneda(total);
+    }
+
+
+    /***************************************************
+     * GUARDAR FORMULARIO
+     ***************************************************/
+
+    async function guardarFormulario(
+      event
+    ) {
+
+      event.preventDefault();
+
+
+      const boton =
+        document.getElementById(
+          'btnGuardar'
+        );
+
+
+      if (boton) {
+
+        boton.disabled = true;
+
+        boton.innerHTML =
+          '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+      }
+
+
+      try {
+
+        const datos =
+          obtenerDatosFormulario();
+
+
+        const accion =
+          filaEditando
+            ? 'actualizar'
+            : 'guardar';
+
+
+        const parametros =
+          filaEditando
+            ? {
+                fila: filaEditando,
+                datos: datos
+              }
+            : {
+                datos: datos
+              };
+
+
+        const respuesta =
+          await callGoogleScript(
+            accion,
+            parametros
+          );
+
+
+        if (
+          !respuesta ||
+          !respuesta.success
+        ) {
+
+          throw new Error(
+            respuesta?.message ||
+            'No fue posible guardar el registro.'
+          );
+        }
+
+
+        mostrarAlerta(
+          respuesta.message ||
+          'Registro guardado correctamente.',
+          'success'
+        );
+
+
+        /*
+         * MUY IMPORTANTE:
+         *
+         * Como hubo modificación,
+         * se invalida el caché del consolidado.
+         */
+        invalidarCacheConsolidado();
+
+
+        nuevoFormulario();
+
+
+        /*
+         * Si el usuario está en Consolidado,
+         * cargar información actualizada.
+         */
+        const consolidado =
+          document.getElementById(
+            'pills-consolidado'
+          );
+
+
+        if (
+          consolidado &&
+          consolidado.classList.contains(
+            'show'
+          )
+        ) {
+
+          cargarConsolidado(true);
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        mostrarAlerta(
+          '❌ ' +
+          error.message,
+          'danger'
+        );
+
+      } finally {
+
+        if (boton) {
+
+          boton.disabled = false;
+
+          boton.innerHTML =
+            '<i class="bi bi-save"></i> ' +
+            (
+              filaEditando
+                ? 'Actualizar'
+                : 'Guardar'
+            );
+        }
+      }
+    }
+
+
+    /***************************************************
+     * OBTENER DATOS DEL FORMULARIO
+     ***************************************************/
+
+    function obtenerDatosFormulario() {
+
+      return {
+
+        fechaRegistro:
+          document.getElementById(
+            'fechaRegistro'
+          )?.value || '',
+
+        cedulaInfractor:
+          document.getElementById(
+            'cedulaInfractor'
+          )?.value.trim() || '',
+
+        nombre:
+          document.getElementById(
+            'nombre'
+          )?.value.trim() || '',
+
+        placa:
+          document.getElementById(
+            'placa'
+          )?.value.trim().toUpperCase() || '',
+
+        numeroComparendo:
+          document.getElementById(
+            'numeroComparendo'
+          )?.value.trim() || '',
+
+        tipoInfraccion:
+          document.getElementById(
+            'tipoInfraccion'
+          )?.value || '',
+
+        tipoAgente:
+          document.getElementById(
+            'tipoAgente'
+          )?.value || '',
+
+        valorGrua:
+          convertirNumero(
+            document.getElementById(
+              'valorGrua'
+            )?.value
+          ),
+
+        valorParqueadero:
+          convertirNumero(
+            document.getElementById(
+              'valorParqueadero'
+            )?.value
+          ),
+
+        total:
+          convertirNumero(
+            document.getElementById(
+              'total'
+            )?.value
+          ),
+
+        fechaPago:
+          document.getElementById(
+            'fechaPago'
+          )?.value || '',
+
+        resumenFacturacion:
+          document.getElementById(
+            'resumenFacturacion'
+          )?.value || ''
+      };
+    }
+
+
+    /***************************************************
+     * NUEVO FORMULARIO
+     ***************************************************/
+
+    function nuevoFormulario() {
+
+      const form =
+        document.getElementById(
+          'formRegistro'
+        );
+
+
+      if (form) {
+        form.reset();
+      }
+
+
+      filaEditando =
+        null;
+
+
+      const hidden =
+        document.getElementById(
+          'filaEditando'
+        );
+
+
+      if (hidden) {
+        hidden.value = '';
+      }
+
+
+      establecerFechaActual();
+
+
+      const boton =
+        document.getElementById(
+          'btnGuardar'
+        );
+
+
+      if (boton) {
+
+        boton.innerHTML =
+          '<i class="bi bi-save"></i> Guardar';
+      }
+
+
+      calcularTotales();
+    }
+
+
+    /***************************************************
+     * REALIZAR BÚSQUEDA
+     ***************************************************/
+
+    async function realizarBusqueda() {
+
+      const campo =
+        document.getElementById(
+          'valorBusqueda'
+        );
+
+
+      const valor =
+        campo?.value.trim() || '';
+
+
+      if (valor.length < 3) {
+
+        mostrarAlerta(
+          'Ingrese al menos 3 caracteres.',
+          'warning'
+        );
+
+        return;
+      }
+
+
+      const loading =
+        document.getElementById(
+          'loadingBusqueda'
+        );
+
+
+      if (loading) {
+        loading.style.display =
+          'block';
+      }
+
+
+      try {
+
+        const respuesta =
+          await callGoogleScript(
+            'buscar',
+            {
+              valor: valor
+            }
+          );
+
+
+        if (
+          !respuesta ||
+          !respuesta.success
+        ) {
+
+          throw new Error(
+            respuesta?.message ||
+            'No fue posible realizar la búsqueda.'
+          );
+        }
+
+
+        registrosBusquedaActual =
+          respuesta.registros || [];
+
+
+        mostrarResultadosBusqueda(
+          registrosBusquedaActual
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        mostrarAlerta(
+          '❌ ' +
+          error.message,
+          'danger'
+        );
+
+      } finally {
+
+        if (loading) {
+
+          loading.style.display =
+            'none';
+        }
+      }
+    }
+
+
+    /***************************************************
+     * MOSTRAR RESULTADOS BÚSQUEDA
+     ***************************************************/
+
+    function mostrarResultadosBusqueda(
+      registros
+    ) {
+
+      const contenedor =
+        document.getElementById(
+          'resultadosBusqueda'
+        );
+
+
+      if (!contenedor) {
+        return;
+      }
+
+
+      if (
+        !registros ||
+        registros.length === 0
+      ) {
+
+        contenedor.innerHTML = `
+          <div class="alert alert-info">
+            No se encontraron registros.
+          </div>
+        `;
+
+        return;
+      }
+
+
+      const filas =
+        registros.map(
+          function (registro) {
+
+            const d =
+              registro.datos;
+
+
+            return `
+
+              <tr>
+
+                <td>
+                  ${escapeHtml(
+                    d.cedulaInfractor
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    d.nombre
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    d.placa
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    d.numeroComparendo
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    d.tipoInfraccion
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    d.fechaPago
+                  )}
+                </td>
+
+                <td class="text-end">
+                  ${formatearMoneda(
+                    d.total
+                  )}
+                </td>
+
+                <td>
+
+                  <button
+                    class="btn btn-sm btn-primary"
+                    onclick="editarRegistro(${registro.fila})"
+                  >
+
+                    <i class="bi bi-pencil"></i>
+
+                    Editar
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            `;
+          }
+        ).join('');
+
+
+      contenedor.innerHTML = `
+
+        <div class="table-responsive">
+
+          <table class="table table-bordered table-hover">
+
+            <thead class="table-primary">
+
+              <tr>
+
+                <th>Cédula</th>
+
+                <th>Nombre</th>
+
+                <th>Placa</th>
+
+                <th>Comparendo</th>
+
+                <th>Infracción</th>
+
+                <th>Fecha Pago</th>
+
+                <th>Total</th>
+
+                <th>Acción</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${filas}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      `;
+    }
+
+
+    /***************************************************
+     * EDITAR REGISTRO
+     ***************************************************/
+
+    async function editarRegistro(
+      fila
+    ) {
+
+      try {
+
+        const respuesta =
+          await callGoogleScript(
+            'obtenerRegistro',
+            {
+              fila: fila
+            }
+          );
+
+
+        if (
+          !respuesta ||
+          !respuesta.success
+        ) {
+
+          throw new Error(
+            respuesta?.message ||
+            'No fue posible obtener el registro.'
+          );
+        }
+
+
+        cargarDatosEnFormulario(
+          respuesta.registro
+        );
+
+
+        const pestaña =
+          document.getElementById(
+            'pills-registro-tab'
+          );
+
+
+        if (pestaña) {
+
+          bootstrap.Tab
+            .getOrCreateInstance(
+              pestaña
+            )
+            .show();
+        }
+
+
+      } catch (error) {
+
+        mostrarAlerta(
+          '❌ ' +
+          error.message,
+          'danger'
+        );
+      }
+    }
+
+
+    /***************************************************
+     * CARGAR DATOS EN FORMULARIO
+     ***************************************************/
+
+    function cargarDatosEnFormulario(
+      registro
+    ) {
+
+      const d =
+        registro.datos;
+
+
+      filaEditando =
+        registro.fila;
+
+
+      document.getElementById(
+        'filaEditando'
+      ).value =
+        registro.fila;
+
+
+      document.getElementById(
+        'fechaRegistro'
+      ).value =
+        convertirFechaParaInput(
+          d.fechaRegistro
+        );
+
+
+      document.getElementById(
+        'cedulaInfractor'
+      ).value =
+        d.cedulaInfractor || '';
+
+
+      document.getElementById(
+        'nombre'
+      ).value =
+        d.nombre || '';
+
+
+      document.getElementById(
+        'placa'
+      ).value =
+        d.placa || '';
+
+
+      document.getElementById(
+        'numeroComparendo'
+      ).value =
+        d.numeroComparendo || '';
+
+
+      document.getElementById(
+        'tipoInfraccion'
+      ).value =
+        normalizarTipoInfraccion(
+          d.tipoInfraccion
+        );
+
+
+      document.getElementById(
+        'tipoAgente'
+      ).value =
+        normalizarTipoAgente(
+          d.tipoAgente
+        );
+
+
+      document.getElementById(
+        'valorGrua'
+      ).value =
+        d.valorGrua || 0;
+
+
+      document.getElementById(
+        'valorParqueadero'
+      ).value =
+        d.valorParqueadero || 0;
+
+
+      document.getElementById(
+        'total'
+      ).value =
+        d.total || 0;
+
+
+      document.getElementById(
+        'fechaPago'
+      ).value =
+        convertirFechaParaInput(
+          d.fechaPago
+        );
+
+
+      document.getElementById(
+        'resumenFacturacion'
+      ).value =
+        d.resumenFacturacion || '';
+
+
+      const boton =
+        document.getElementById(
+          'btnGuardar'
+        );
+
+
+      if (boton) {
+
+        boton.innerHTML =
+          '<i class="bi bi-pencil-square"></i> Actualizar';
+      }
+    }
+
+
+    /***************************************************
+     * CONSOLIDADO
+     *
+     * FUNCIÓN OPTIMIZADA
+     ***************************************************/
+
+    async function cargarConsolidado(
+      forzar = false
+    ) {
+
+      /*
+       * Si ya se está cargando, no lanzar
+       * otra solicitud simultánea.
+       */
+      if (consolidadoCargando) {
+        return;
+      }
+
+
+      /*
+       * Si ya está cargado y no se solicitó
+       * actualización forzada, utilizar memoria.
+       */
+      if (
+        !forzar &&
+        consolidadoCargado
+      ) {
+
+        renderizarTablaConsolidado(
+          datosFiltrados
+        );
+
+        return;
+      }
+
+
+      /*
+       * Intentar utilizar caché local
+       * solamente si no se solicitó actualización.
+       */
+      if (!forzar) {
+
+        const cacheLocal =
+          leerCacheLocalConsolidado();
+
+
+        if (cacheLocal) {
+
+          datosConsolidadoGlobal =
+            cacheLocal;
+
+
+          datosFiltrados =
+            [...cacheLocal];
+
+
+          consolidadoCargado =
+            true;
+
+
+          paginaConsolidado =
+            1;
+
+
+          limpiarFiltrosUI();
+
+
+          renderizarTablaConsolidado(
+            datosFiltrados
+          );
+
+
+          return;
+        }
+      }
+
+
+      consolidadoCargando =
+        true;
+
+
+      mostrarEstadoCargaConsolidado(
+        true
+      );
+
+
+      try {
+
+        const respuesta =
+          await callGoogleScript(
+            'consolidado'
+          );
+
+
+        if (
+          !respuesta ||
+          !respuesta.success
+        ) {
+
+          throw new Error(
+            respuesta?.message ||
+            'Respuesta inválida del servidor.'
+          );
+        }
+
+
+        datosConsolidadoGlobal =
+          Array.isArray(
+            respuesta.registros
+          )
+            ? respuesta.registros
+            : [];
+
+
+        datosFiltrados =
+          [
+            ...datosConsolidadoGlobal
+          ];
+
+
+        consolidadoCargado =
+          true;
+
+
+        paginaConsolidado =
+          1;
+
+
+        guardarCacheLocalConsolidado(
+          datosConsolidadoGlobal
+        );
+
+
+        limpiarFiltrosUI();
+
+
+        renderizarTablaConsolidado(
+          datosFiltrados
+        );
+
+
+        if (
+          datosConsolidadoGlobal.length === 0
+        ) {
+
+          mostrarAlerta(
+            'No hay registros en la base de datos.',
+            'info'
+          );
+
+        } else {
+
+          mostrarAlerta(
+            'Consolidado cargado: ' +
+            datosConsolidadoGlobal.length +
+            ' registros.',
+            'success'
+          );
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          'Error consolidado:',
+          error
+        );
+
+
+        mostrarAlerta(
+          '❌ Error al cargar consolidado: ' +
+          error.message,
+          'danger'
+        );
+
+
+        const sinDatos =
+          document.getElementById(
+            'sinDatosConsolidado'
+          );
+
+
+        if (sinDatos) {
+
+          sinDatos.style.display =
+            'block';
+        }
+
+
+      } finally {
+
+        consolidadoCargando =
+          false;
+
+
+        mostrarEstadoCargaConsolidado(
+          false
+        );
+      }
+    }
+
+
+    /***************************************************
+     * ESTADO DE CARGA
+     ***************************************************/
+
+    function mostrarEstadoCargaConsolidado(
+      cargando
+    ) {
+
+      const loading =
+        document.getElementById(
+          'loadingConsolidado'
+        );
+
+
+      const tabla =
+        document.getElementById(
+          'contenedorTablaConsolidado'
+        );
+
+
+      if (loading) {
+
+        loading.style.display =
+          cargando
+            ? 'block'
+            : 'none';
+      }
+
+
+      if (cargando && tabla) {
+
+        tabla.style.display =
+          'none';
+      }
+
+
+      const sinDatos =
+        document.getElementById(
+          'sinDatosConsolidado'
+        );
+
+
+      if (cargando && sinDatos) {
+
+        sinDatos.style.display =
+          'none';
+      }
+    }
+
+
+    /***************************************************
+     * RENDERIZAR CONSOLIDADO
+     *
+     * SOLO CREA 50 FILAS COMO MÁXIMO.
+     ***************************************************/
+
+    function renderizarTablaConsolidado(
+      datos
+    ) {
+
+      const tabla =
+        document.getElementById(
+          'contenedorTablaConsolidado'
+        );
+
+
+      const tbody =
+        document.getElementById(
+          'tbodyConsolidado'
+        );
+
+
+      const sinDatos =
+        document.getElementById(
+          'sinDatosConsolidado'
+        );
+
+
+      if (!tbody) {
+        return;
+      }
+
+
+      if (
+        !datos ||
+        datos.length === 0
+      ) {
+
+        tbody.innerHTML = '';
+
+
+        if (tabla) {
+
+          tabla.style.display =
+            'none';
+        }
+
+
+        if (sinDatos) {
+
+          sinDatos.style.display =
+            'block';
+        }
+
+
+        actualizarTotalesConsolidado(
+          []
+        );
+
+
+        renderizarPaginacion(
+          0,
+          0
+        );
+
+
+        return;
+      }
+
+
+      if (sinDatos) {
+
+        sinDatos.style.display =
+          'none';
+      }
+
+
+      if (tabla) {
+
+        tabla.style.display =
+          'block';
+      }
+
+
+      const totalPaginas =
+        Math.ceil(
+          datos.length /
+          REGISTROS_POR_PAGINA
+        );
+
+
+      if (
+        paginaConsolidado >
+        totalPaginas
+      ) {
+
+        paginaConsolidado =
+          totalPaginas;
+      }
+
+
+      if (
+        paginaConsolidado < 1
+      ) {
+
+        paginaConsolidado =
+          1;
+      }
+
+
+      const inicio =
+        (
+          paginaConsolidado - 1
+        ) *
+        REGISTROS_POR_PAGINA;
+
+
+      const fin =
+        Math.min(
+          inicio +
+          REGISTROS_POR_PAGINA,
+          datos.length
+        );
+
+
+      const pagina =
+        datos.slice(
+          inicio,
+          fin
+        );
+
+
+      /*
+       * Construir TODO el HTML como texto.
+       *
+       * Esto es mucho más rápido que
+       * crear appendChild() fila por fila.
+       */
+      let html = '';
+
+
+      for (
+        let i = 0;
+        i < pagina.length;
+        i++
+      ) {
+
+        const registro =
+          pagina[i];
+
+
+        const d =
+          registro.datos;
+
+
+        html += `
+
+          <tr>
+
+            <td>
+              ${escapeHtml(
+                d.cedulaInfractor
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                d.nombre
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                d.placa
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                d.numeroComparendo
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                d.tipoInfraccion
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                formatearFechaParaTabla(
+                  d.fechaPago
+                )
+              )}
+            </td>
+
+            <td class="text-end">
+              ${formatearMoneda(
+                d.valorGrua
+              )}
+            </td>
+
+            <td class="text-end">
+              ${formatearMoneda(
+                d.valorParqueadero
+              )}
+            </td>
+
+            <td class="text-end fw-semibold">
+              ${formatearMoneda(
+                d.total
+              )}
+            </td>
+
+          </tr>
+
+        `;
+      }
+
+
+      /*
+       * UNA SOLA modificación del DOM.
+       */
+      tbody.innerHTML =
+        html;
+
+
+      /*
+       * Los totales corresponden a TODOS
+       * los registros filtrados, no solamente
+       * a los 50 visibles.
+       */
+      actualizarTotalesConsolidado(
+        datos
+      );
+
+
+      renderizarPaginacion(
+        totalPaginas,
+        datos.length
+      );
+    }
+
+
+    /***************************************************
+     * PAGINACIÓN
+     ***************************************************/
+
+    function obtenerContenedorPaginacion() {
+
+      let contenedor =
+        document.getElementById(
+          'paginacionConsolidado'
+        );
+
+
+      if (!contenedor) {
+
+        contenedor =
+          document.createElement(
+            'div'
+          );
+
+
+        contenedor.id =
+          'paginacionConsolidado';
+
+
+        contenedor.className =
+          'pagination-consolidado';
+
+
+        const tabla =
+          document.getElementById(
+            'contenedorTablaConsolidado'
+          );
+
+
+        if (
+          tabla &&
+          tabla.parentNode
+        ) {
+
+          tabla.parentNode.insertBefore(
+            contenedor,
+            tabla.nextSibling
+          );
+        }
+      }
+
+
+      return contenedor;
+    }
+
+
+    function renderizarPaginacion(
+      totalPaginas,
+      totalRegistros
+    ) {
+
+      const contenedor =
+        obtenerContenedorPaginacion();
+
+
+      if (!contenedor) {
+        return;
+      }
+
+
+      if (
+        totalRegistros === 0 ||
+        totalPaginas <= 1
+      ) {
+
+        contenedor.innerHTML =
+          totalRegistros > 0
+            ? `
+              <span class="pagination-info">
+                Mostrando ${totalRegistros} registros
+              </span>
+            `
+            : '';
+
+
+        return;
+      }
+
+
+      let html = `
+
+        <span class="pagination-info">
+
+          Registros:
+          ${
+            (
+              (
+                paginaConsolidado - 1
+              ) *
+              REGISTROS_POR_PAGINA
+            ) + 1
+          }
+          -
+          ${
+            Math.min(
+              paginaConsolidado *
+              REGISTROS_POR_PAGINA,
+              totalRegistros
+            )
+          }
+          de
+          ${totalRegistros}
+
+        </span>
+
+        <button
+          class="btn btn-sm btn-outline-primary"
+          onclick="cambiarPaginaConsolidado(1)"
+          ${paginaConsolidado === 1 ? 'disabled' : ''}
+        >
+          <i class="bi bi-chevron-double-left"></i>
+        </button>
+
+        <button
+          class="btn btn-sm btn-outline-primary"
+          onclick="cambiarPaginaConsolidado(${paginaConsolidado - 1})"
+          ${paginaConsolidado === 1 ? 'disabled' : ''}
+        >
+          <i class="bi bi-chevron-left"></i>
+        </button>
+
+      `;
+
+
+      /*
+       * Mostrar máximo 7 botones.
+       */
+      let inicio =
+        Math.max(
+          1,
+          paginaConsolidado - 3
+        );
+
+
+      let fin =
+        Math.min(
+          totalPaginas,
+          inicio + 6
+        );
+
+
+      if (
+        fin - inicio < 6
+      ) {
+
+        inicio =
+          Math.max(
+            1,
+            fin - 6
+          );
+      }
+
+
+      for (
+        let pagina = inicio;
+        pagina <= fin;
+        pagina++
+      ) {
+
+        html += `
+
+          <button
+            class="btn btn-sm ${
+              pagina === paginaConsolidado
+                ? 'btn-primary'
+                : 'btn-outline-primary'
+            }"
+            onclick="cambiarPaginaConsolidado(${pagina})"
+          >
+            ${pagina}
+          </button>
+
+        `;
+      }
+
+
+      html += `
+
+        <button
+          class="btn btn-sm btn-outline-primary"
+          onclick="cambiarPaginaConsolidado(${paginaConsolidado + 1})"
+          ${paginaConsolidado === totalPaginas ? 'disabled' : ''}
+        >
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <button
+          class="btn btn-sm btn-outline-primary"
+          onclick="cambiarPaginaConsolidado(${totalPaginas})"
+          ${paginaConsolidado === totalPaginas ? 'disabled' : ''}
+        >
+          <i class="bi bi-chevron-double-right"></i>
+        </button>
+
+      `;
+
+
+      contenedor.innerHTML =
+        html;
+    }
+
+
+    /***************************************************
+     * CAMBIAR PÁGINA
+     ***************************************************/
+
+    function cambiarPaginaConsolidado(
+      pagina
+    ) {
+
+      const totalPaginas =
+        Math.ceil(
+          datosFiltrados.length /
+          REGISTROS_POR_PAGINA
+        );
+
+
+      if (
+        pagina < 1 ||
+        pagina > totalPaginas
+      ) {
+
+        return;
+      }
+
+
+      paginaConsolidado =
+        pagina;
+
+
+      renderizarTablaConsolidado(
+        datosFiltrados
+      );
+    }
+
+
+    /***************************************************
+     * FILTROS
+     ***************************************************/
+
+    function aplicarFiltros() {
+
+      if (
+        !consolidadoCargado
+      ) {
+
+        mostrarAlerta(
+          'Primero cargue el consolidado.',
+          'warning'
+        );
+
+        return;
+      }
+
+
+      const fechaInicio =
+        document.getElementById(
+          'filtroFechaInicio'
+        )?.value || '';
+
+
+      const fechaFin =
+        document.getElementById(
+          'filtroFechaFin'
+        )?.value || '';
+
+
+      const cedula =
+        normalizarTexto(
+          document.getElementById(
+            'filtroCedula'
+          )?.value || ''
+        );
+
+
+      const placa =
+        normalizarTexto(
+          document.getElementById(
+            'filtroPlaca'
+          )?.value || ''
+        );
+
+
+      datosFiltrados =
+        datosConsolidadoGlobal.filter(
+          function (registro) {
+
+            const d =
+              registro.datos;
+
+
+            /*
+             * CÉDULA
+             */
+            if (
+              cedula &&
+              !normalizarTexto(
+                d.cedulaInfractor
+              ).includes(
+                cedula
+              )
+            ) {
+
+              return false;
+            }
+
+
+            /*
+             * PLACA
+             */
+            if (
+              placa &&
+              !normalizarTexto(
+                d.placa
+              ).includes(
+                placa
+              )
+            ) {
+
+              return false;
+            }
+
+
+            /*
+             * FECHAS
+             */
+            if (
+              fechaInicio ||
+              fechaFin
+            ) {
+
+              const fecha =
+                fechaParaComparacion(
+                  d.fechaPago
+                );
+
+
+              /*
+               * Si se está filtrando por fecha
+               * y el registro no tiene fecha,
+               * se excluye.
+               */
+              if (!fecha) {
+
+                return false;
+              }
+
+
+              if (
+                fechaInicio &&
+                fecha < fechaInicio
+              ) {
+
+                return false;
+              }
+
+
+              if (
+                fechaFin &&
+                fecha > fechaFin
+              ) {
+
+                return false;
+              }
+            }
+
+
+            return true;
+          }
+        );
+
+
+      paginaConsolidado =
+        1;
+
+
+      renderizarTablaConsolidado(
+        datosFiltrados
+      );
+
+
+      mostrarAlerta(
+        'Filtro aplicado: ' +
+        datosFiltrados.length +
+        ' registros.',
+        'info'
+      );
+    }
+
+
+    /***************************************************
+     * LIMPIAR FILTROS
+     ***************************************************/
+
+    function limpiarFiltros() {
+
+      limpiarFiltrosUI();
+
+
+      datosFiltrados =
+        [
+          ...datosConsolidadoGlobal
+        ];
+
+
+      paginaConsolidado =
+        1;
+
+
+      renderizarTablaConsolidado(
+        datosFiltrados
+      );
+    }
+
+
+    function limpiarFiltrosUI() {
+
+      const ids = [
+        'filtroFechaInicio',
+        'filtroFechaFin',
+        'filtroCedula',
+        'filtroPlaca'
+      ];
+
+
+      ids.forEach(
+        function (id) {
+
+          const elemento =
+            document.getElementById(id);
+
+
+          if (elemento) {
+
+            elemento.value =
+              '';
+          }
+        }
+      );
+    }
+
+
+    /***************************************************
+     * TOTALES
+     ***************************************************/
+
+    function actualizarTotalesConsolidado(
+      datos
+    ) {
+
+      let totalGrua = 0;
+
+      let totalParqueadero = 0;
+
+      let totalGeneral = 0;
+
+
+      (datos || []).forEach(
+        function (registro) {
+
+          const d =
+            registro.datos;
+
+
+          totalGrua +=
+            convertirNumero(
+              d.valorGrua
+            );
+
+
+          totalParqueadero +=
+            convertirNumero(
+              d.valorParqueadero
+            );
+
+
+          totalGeneral +=
+            convertirNumero(
+              d.total
+            );
+        }
+      );
+
+
+      const campoGrua =
+        document.getElementById(
+          'totalGruaConsolidado'
+        );
+
+
+      const campoParqueadero =
+        document.getElementById(
+          'totalParqueaderoConsolidado'
+        );
+
+
+      const campoTotal =
+        document.getElementById(
+          'totalGeneralConsolidado'
+        );
+
+
+      if (campoGrua) {
+
+        campoGrua.textContent =
+          formatearMoneda(
+            totalGrua
+          );
+      }
+
+
+      if (campoParqueadero) {
+
+        campoParqueadero.textContent =
+          formatearMoneda(
+            totalParqueadero
+          );
+      }
+
+
+      if (campoTotal) {
+
+        campoTotal.textContent =
+          formatearMoneda(
+            totalGeneral
+          );
+      }
+    }
+
+
+    /***************************************************
+     * EXPORTAR EXCEL
+     *
+     * Exporta TODOS los registros filtrados.
+     * No depende de las filas visibles.
+     ***************************************************/
+
+    function exportarExcel() {
+
+      if (
+        !datosFiltrados ||
+        datosFiltrados.length === 0
+      ) {
+
+        mostrarAlerta(
+          'No hay datos para exportar.',
+          'warning'
+        );
+
+        return;
+      }
+
+
+      const encabezados = [
+
+        'Cédula',
+
+        'Nombre',
+
+        'Placa',
+
+        'Nro. Comparendo',
+
+        'Infracción',
+
+        'Fecha Pago',
+
+        'Valor Grúa',
+
+        'Parqueadero',
+
+        'Total'
+      ];
+
+
+      const filas =
+        datosFiltrados.map(
+          function (registro) {
+
+            const d =
+              registro.datos;
+
+
+            return [
+
+              d.cedulaInfractor || '',
+
+              d.nombre || '',
+
+              d.placa || '',
+
+              d.numeroComparendo || '',
+
+              d.tipoInfraccion || '',
+
+              d.fechaPago || '',
+
+              convertirNumero(
+                d.valorGrua
+              ),
+
+              convertirNumero(
+                d.valorParqueadero
+              ),
+
+              convertirNumero(
+                d.total
+              )
+            ];
+          }
+        );
+
+
+      let totalGrua = 0;
+
+      let totalParqueadero = 0;
+
+      let totalGeneral = 0;
+
+
+      datosFiltrados.forEach(
+        function (registro) {
+
+          const d =
+            registro.datos;
+
+
+          totalGrua +=
+            convertirNumero(
+              d.valorGrua
+            );
+
+
+          totalParqueadero +=
+            convertirNumero(
+              d.valorParqueadero
+            );
+
+
+          totalGeneral +=
+            convertirNumero(
+              d.total
+            );
+        }
+      );
+
+
+      filas.push([
+
+        '',
+        '',
+        '',
+        '',
+        '',
+        'TOTALES',
+
+        totalGrua,
+
+        totalParqueadero,
+
+        totalGeneral
+
+      ]);
+
+
+      const hoja =
+        XLSX.utils.aoa_to_sheet([
+          encabezados,
+          ...filas
+        ]);
+
+
+      hoja['!cols'] = [
+
+        { wch: 16 },
+        { wch: 30 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 16 }
+
+      ];
+
+
+      const libro =
+        XLSX.utils.book_new();
+
+
+      XLSX.utils.book_append_sheet(
+        libro,
+        hoja,
+        'Consolidado'
+      );
+
+
+      XLSX.writeFile(
+        libro,
+        'Consolidado_Comparendos.xlsx'
+      );
+    }
+
+
+    /***************************************************
+     * EXPORTAR PDF
+     *
+     * Exporta TODOS los registros filtrados.
+     ***************************************************/
+
+    function exportarPDF() {
+
+      if (
+        !datosFiltrados ||
+        datosFiltrados.length === 0
+      ) {
+
+        mostrarAlerta(
+          'No hay datos para exportar.',
+          'warning'
+        );
+
+        return;
+      }
+
+
+      if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+      ) {
+
+        mostrarAlerta(
+          'No fue posible cargar el generador PDF.',
+          'danger'
+        );
+
+        return;
+      }
+
+
+      const {
+        jsPDF
+      } = window.jspdf;
+
+
+      const doc =
+        new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'legal'
+        });
+
+
+      doc.setFontSize(
+        14
+      );
+
+
+      doc.text(
+        'CONSOLIDADO DE COMPARENDOS - GRÚA Y PARQUEADERO',
+        14,
+        12
+      );
+
+
+      doc.setFontSize(
+        9
+      );
+
+
+      doc.text(
+        'Secretaría de Movilidad - La Ceja',
+        14,
+        18
+      );
+
+
+      const encabezados = [
+
+        'Cédula',
+
+        'Nombre',
+
+        'Placa',
+
+        'Comparendo',
+
+        'Infracción',
+
+        'Fecha Pago',
+
+        'Grúa',
+
+        'Parqueadero',
+
+        'Total'
+
+      ];
+
+
+      const cuerpo =
+        datosFiltrados.map(
+          function (registro) {
+
+            const d =
+              registro.datos;
+
+
+            return [
+
+              d.cedulaInfractor || '',
+
+              d.nombre || '',
+
+              d.placa || '',
+
+              d.numeroComparendo || '',
+
+              d.tipoInfraccion || '',
+
+              d.fechaPago || '',
+
+              formatearMoneda(
+                d.valorGrua
+              ),
+
+              formatearMoneda(
+                d.valorParqueadero
+              ),
+
+              formatearMoneda(
+                d.total
+              )
+            ];
+          }
+        );
+
+
+      let totalGrua = 0;
+
+      let totalParqueadero = 0;
+
+      let totalGeneral = 0;
+
+
+      datosFiltrados.forEach(
+        function (registro) {
+
+          const d =
+            registro.datos;
+
+
+          totalGrua +=
+            convertirNumero(
+              d.valorGrua
+            );
+
+
+          totalParqueadero +=
+            convertirNumero(
+              d.valorParqueadero
+            );
+
+
+          totalGeneral +=
+            convertirNumero(
+              d.total
+            );
+        }
+      );
+
+
+      doc.autoTable({
+
+        startY: 23,
+
+        head: [
+          encabezados
+        ],
+
+        body: cuerpo,
+
+        foot: [[
+
+          '',
+          '',
+          '',
+          '',
+          '',
+          'TOTALES',
+
+          formatearMoneda(
+            totalGrua
+          ),
+
+          formatearMoneda(
+            totalParqueadero
+          ),
+
+          formatearMoneda(
+            totalGeneral
+          )
+
+        ]],
+
+        styles: {
+
+          fontSize: 7,
+
+          cellPadding: 2
+
+        },
+
+        headStyles: {
+
+          fontSize: 7
+
+        },
+
+        footStyles: {
+
+          fontStyle: 'bold'
+
+        },
+
+        margin: {
+
+          left: 8,
+
+          right: 8
+
+        }
+      });
+
+
+      doc.save(
+        'Consolidado_Comparendos.pdf'
+      );
+    }
+
+
+    /***************************************************
+     * CACHÉ LOCAL
+     ***************************************************/
+
+    function guardarCacheLocalConsolidado(
+      datos
+    ) {
+
+      try {
+
+        const objeto = {
+
+          timestamp:
+            Date.now(),
+
+          registros:
+            datos
+        };
+
+
+        sessionStorage.setItem(
+          CACHE_LOCAL_KEY,
+          JSON.stringify(
+            objeto
+          )
+        );
+
+      } catch (error) {
+
+        /*
+         * Si el navegador no permite almacenar
+         * el contenido, simplemente continuamos.
+         */
+        console.warn(
+          'No fue posible guardar caché local:',
+          error
+        );
+      }
+    }
+
+
+    function leerCacheLocalConsolidado() {
+
+      try {
+
+        const texto =
+          sessionStorage.getItem(
+            CACHE_LOCAL_KEY
+          );
+
+
+        if (!texto) {
+          return null;
+        }
+
+
+        const objeto =
+          JSON.parse(texto);
+
+
+        if (
+          !objeto ||
+          !objeto.timestamp ||
+          !Array.isArray(
+            objeto.registros
+          )
+        ) {
+
+          sessionStorage.removeItem(
+            CACHE_LOCAL_KEY
+          );
+
+          return null;
+        }
+
+
+        /*
+         * Caché vencido.
+         */
+        if (
+          Date.now() -
+          objeto.timestamp >
+          CACHE_LOCAL_MS
+        ) {
+
+          sessionStorage.removeItem(
+            CACHE_LOCAL_KEY
+          );
+
+          return null;
+        }
+
+
+        return objeto.registros;
+
+      } catch (error) {
+
+        try {
+
+          sessionStorage.removeItem(
+            CACHE_LOCAL_KEY
+          );
+
+        } catch (e) {}
+
+
+        return null;
+      }
+    }
+
+
+    /***************************************************
+     * INVALIDAR CACHÉ CONSOLIDADO
+     ***************************************************/
+
+    function invalidarCacheConsolidado() {
+
+      consolidadoCargado =
+        false;
+
+
+      datosConsolidadoGlobal =
+        [];
+
+
+      datosFiltrados =
+        [];
+
+
+      paginaConsolidado =
+        1;
+
+
+      try {
+
+        sessionStorage.removeItem(
+          CACHE_LOCAL_KEY
+        );
+
+      } catch (error) {}
+    }
+
+
+    /***************************************************
+     * NORMALIZAR TIPO INFRACCIÓN
+     ***************************************************/
+
+    function normalizarTipoInfraccion(
+      valor
+    ) {
+
+      const texto =
+        String(
+          valor || ''
+        )
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        texto.includes(
+          'accidente'
+        )
+      ) {
+
+        return 'Accidente';
+      }
+
+
+      if (
+        texto.includes(
+          'comparendo'
+        )
+      ) {
+
+        return 'Comparendo';
+      }
+
+
+      return valor || '';
+    }
+
+
+    /***************************************************
+     * NORMALIZAR TIPO AGENTE
+     ***************************************************/
+
+    function normalizarTipoAgente(
+      valor
+    ) {
+
+      const texto =
+        String(
+          valor || ''
+        )
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        texto.includes(
+          'polic'
+        )
+      ) {
+
+        return 'Policía de Tránsito y Transporte';
+      }
+
+
+      if (
+        texto.includes(
+          'agente'
+        )
+      ) {
+
+        return 'Agentes de Tránsito (Autoridades locales)';
+      }
+
+
+      return valor || '';
+    }
+
+
+    /***************************************************
+     * CONVERTIR FECHA PARA INPUT
+     ***************************************************/
+
+    function convertirFechaParaInput(
+      valor
+    ) {
+
+      if (!valor) {
+        return '';
+      }
+
+
+      const texto =
+        String(valor).trim();
+
+
+      /*
+       * yyyy-MM-dd
+       */
+      if (
+        /^\d{4}-\d{2}-\d{2}/.test(
+          texto
+        )
+      ) {
+
+        return texto.substring(
+          0,
+          10
+        );
+      }
+
+
+      /*
+       * dd/MM/yyyy
+       */
+      const match =
+        texto.match(
+          /^(\d{2})\/(\d{2})\/(\d{4})/
+        );
+
+
+      if (match) {
+
+        return (
+          match[3] +
+          '-' +
+          match[2] +
+          '-' +
+          match[1]
+        );
+      }
+
+
+      return '';
+    }
+
+
+    /***************************************************
+     * FECHA PARA TABLA
+     ***************************************************/
+
+    function formatearFechaParaTabla(
+      valor
+    ) {
+
+      if (!valor) {
+        return '';
+      }
+
+
+      const texto =
+        String(valor).trim();
+
+
+      if (
+        /^\d{2}\/\d{2}\/\d{4}/.test(
+          texto
+        )
+      ) {
+
+        return texto.substring(
+          0,
+          10
+        );
+      }
+
+
+      return texto;
+    }
+
+
+    /***************************************************
+     * FECHA PARA COMPARACIÓN
+     ***************************************************/
+
+    function fechaParaComparacion(
+      valor
+    ) {
+
+      if (!valor) {
+        return '';
+      }
+
+
+      const texto =
+        String(valor).trim();
+
+
+      /*
+       * dd/MM/yyyy
+       */
+      const match =
+        texto.match(
+          /^(\d{2})\/(\d{2})\/(\d{4})/
+        );
+
+
+      if (match) {
+
+        return (
+          match[3] +
+          '-' +
+          match[2] +
+          '-' +
+          match[1]
+        );
+      }
+
+
+      /*
+       * yyyy-MM-dd
+       */
+      if (
+        /^\d{4}-\d{2}-\d{2}/.test(
+          texto
+        )
+      ) {
+
+        return texto.substring(
+          0,
+          10
+        );
+      }
+
+
+      return '';
+    }
+
+
+    /***************************************************
+     * CONVERTIR NÚMERO
+     ***************************************************/
+
+    function convertirNumero(
+      valor
+    ) {
+
+      if (
+        valor === null ||
+        valor === undefined ||
+        valor === ''
+      ) {
+
+        return 0;
+      }
+
+
+      if (
+        typeof valor === 'number'
+      ) {
+
+        return isNaN(valor)
+          ? 0
+          : valor;
+      }
+
+
+      let texto =
+        String(valor)
+          .trim();
+
+
+      if (!texto) {
+        return 0;
+      }
+
+
+      texto =
+        texto
+          .replace(/\$/g, '')
+          .replace(/\s/g, '');
+
+
+      if (
+        texto.includes('.') &&
+        texto.includes(',')
+      ) {
+
+        texto =
+          texto
+            .replace(/\./g, '')
+            .replace(',', '.');
+
+      } else if (
+        texto.includes(',')
+      ) {
+
+        texto =
+          texto.replace(
+            ',',
+            '.'
+          );
+      }
+
+
+      const numero =
+        Number(texto);
+
+
+      return isNaN(numero)
+        ? 0
+        : numero;
+    }
+
+
+    /***************************************************
+     * FORMATEAR MONEDA
+     ***************************************************/
+
+    function formatearMoneda(
+      valor
+    ) {
+
+      const numero =
+        convertirNumero(
+          valor
+        );
+
+
+      return numero.toLocaleString(
+        'es-CO',
+        {
+          style: 'currency',
+          currency: 'COP',
+          maximumFractionDigits: 0
+        }
+      );
+    }
+
+
+    /***************************************************
+     * NORMALIZAR TEXTO
+     ***************************************************/
+
+    function normalizarTexto(
+      valor
+    ) {
+
+      return String(
+        valor || ''
+      )
+        .normalize('NFD')
+        .replace(
+          /[\u0300-\u036f]/g,
+          ''
+        )
+        .toLowerCase()
+        .trim();
+    }
+
+
+    /***************************************************
+     * ESCAPAR HTML
+     ***************************************************/
+
+    function escapeHtml(
+      valor
+    ) {
+
+      return String(
+        valor ?? ''
+      )
+        .replace(
+          /&/g,
+          '&amp;'
+        )
+        .replace(
+          /</g,
+          '&lt;'
+        )
+        .replace(
+          />/g,
+          '&gt;'
+        )
+        .replace(
+          /"/g,
+          '&quot;'
+        )
+        .replace(
+          /'/g,
+          '&#039;'
+        );
+    }
+
+
+    /***************************************************
+     * ALERTAS
+     ***************************************************/
+
+    function mostrarAlerta(
+      mensaje,
+      tipo = 'info'
+    ) {
+
+      const contenedor =
+        document.getElementById(
+          'alertas'
+        );
+
+
+      if (!contenedor) {
+        return;
+      }
+
+
+      const id =
+        'alerta_' +
+        Date.now();
+
+
+      contenedor.insertAdjacentHTML(
+        'beforeend',
+        `
+
+          <div
+            id="${id}"
+            class="alert alert-${tipo} alert-dismissible fade show shadow"
+            role="alert"
+          >
+
+            ${escapeHtml(
+              mensaje
+            )}
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+
+          </div>
+
+        `
+      );
+
+
+      setTimeout(
+        function () {
+
+          const alerta =
+            document.getElementById(
+              id
+            );
+
+
+          if (alerta) {
+
+            bootstrap.Alert
+              .getOrCreateInstance(
+                alerta
+              )
+              .close();
+          }
+
+        },
+        5000
+      );
+    }
+
+  </script>
+
 </body>
+
 </html>

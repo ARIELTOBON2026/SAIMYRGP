@@ -33,12 +33,12 @@ body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -appl
 .alert-custom { box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); border: none; border-radius: 0.5rem; }
 .table-consolidado th { background-color: #f8f9fa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #495057; white-space: nowrap; vertical-align: middle; }
 .table-consolidado td { font-size: 0.85rem; vertical-align: middle; }
-.table-consolidado { min-width: 1500px; }
-.table-consolidado td { white-space: normal; }
-.table-consolidado td.resumen-facturacion { min-width: 360px; max-width: 520px; line-height: 1.35; }
-.table-consolidado td.tipo-agente { min-width: 260px; }
-
 @media (max-width: 768px) { .btn-action { min-width: 80px; font-size: 0.7rem; padding: 0.5rem; } .btn-action i { font-size: 1.1rem; } }
+
+.table-consolidado { min-width: 1600px; }
+.table-consolidado td { white-space: normal; vertical-align: middle; }
+.table-consolidado td:nth-child(7) { min-width: 250px; }
+.table-consolidado td:nth-child(12) { min-width: 360px; max-width: 520px; line-height: 1.35; }
 </style>
 </head>
 <body>
@@ -275,7 +275,7 @@ body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -appl
 <th>Nombre</th>
 <th>Placa</th>
 <th>Nro. Comparendo</th>
-<th>Infracción</th>
+<th>Tipo Infracción</th>
 <th>Tipo Agente</th>
 <th>Fecha Pago</th>
 <th class="text-end">Valor Grúa</th>
@@ -376,7 +376,7 @@ body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -appl
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuq148aIyHQuhWZE2-HMMHS6emcYLCVKVY3S019phgmCgI2Elt01zSwMPAAJB5ilv0/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXvXsuvihr381CVqPbgbQfMQxWzdjLiCxtW3E4AbdFauyCTshE9tpStIbIKOnbvOPG/exec";
 let filaEditando = null;
 let registrosBusquedaActual = [];
 let datosConsolidadoGlobal = [];
@@ -532,19 +532,12 @@ function formatearMoneda(valor) {
 
 function formatearFechaParaTabla(fechaStr) {
     if (!fechaStr) return '-';
-    const texto = String(fechaStr).trim();
-
-    const ddmmyyyy = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if (ddmmyyyy) {
-        return `${String(ddmmyyyy[1]).padStart(2, '0')}/${String(ddmmyyyy[2]).padStart(2, '0')}/${ddmmyyyy[3]}`;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) return fechaStr;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+        const [year, month, day] = fechaStr.split('-');
+        return `${day}/${month}/${year}`;
     }
-
-    const iso = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-    if (iso) {
-        return `${String(iso[3]).padStart(2, '0')}/${String(iso[2]).padStart(2, '0')}/${iso[1]}`;
-    }
-
-    return texto;
+    return fechaStr;
 }
 
 function actualizarObservaciones() {
@@ -687,40 +680,10 @@ function ejecutarBusqueda() {
             mostrarAlerta('⚠️ No se encontraron registros para: ' + valor, 'warning');
         } else {
             registrosBusquedaActual = response.registros;
-            let html = `<div class="table-responsive">
-                <table class="table table-sm table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Fila</th>
-                            <th>Fecha</th>
-                            <th>Cédula</th>
-                            <th>Nombre</th>
-                            <th>Placa</th>
-                            <th>Comparendo</th>
-                            <th>Infracción</th>
-                            <th>Agente</th>
-                            <th>Fecha Pago</th>
-                            <th>Total</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead><tbody>`;
+            let html = `<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Nombre</th><th>Placa</th><th>Nro. Comparendo</th><th>Tipo Infracción</th><th>Tipo Agente</th><th>Fecha Pago</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
             registrosBusquedaActual.forEach((reg, idx) => {
                 const d = reg.datos || {};
-                html += `<tr>
-                    <td>${escaparHTML(reg.fila || '')}</td>
-                    <td>${escaparHTML(d.fechaRegistro || '')}</td>
-                    <td>${escaparHTML(d.cedulaInfractor || '')}</td>
-                    <td>${escaparHTML(d.nombre || '')}</td>
-                    <td><strong>${escaparHTML(d.placa || '')}</strong></td>
-                    <td>${escaparHTML(d.numeroComparendo || '')}</td>
-                    <td>${escaparHTML(d.tipoInfraccion || '')}</td>
-                    <td>${escaparHTML(d.tipoAgente || '')}</td>
-                    <td>${escaparHTML(d.fechaPago || '')}</td>
-                    <td>${formatearMoneda(d.total)}</td>
-                    <td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">
-                        <i class="bi bi-pencil-square me-1"></i>Editar
-                    </button></td>
-                </tr>`;
+                html += `<tr><td>${escaparHTML(d.fechaRegistro||'')}</td><td>${escaparHTML(d.cedulaInfractor||'')}</td><td>${escaparHTML(d.nombre||'')}</td><td><strong>${escaparHTML(d.placa||'')}</strong></td><td>${escaparHTML(d.numeroComparendo || d.nroComparendo || d.comparendo || '')}</td><td>${escaparHTML(d.tipoInfraccion || d.infraccion || '')}</td><td>${escaparHTML(d.tipoAgente || d.agente || '')}</td><td>${escaparHTML(formatearFechaParaTabla(d.fechaPago || ''))}</td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
             });
             html += `</tbody></table></div>`;
             resultadosDiv.innerHTML = html;
@@ -742,18 +705,18 @@ function cargarDatosEnFormulario(registro) {
     filaEditando = Number(fila);
     document.getElementById('filaActual').value = Number(fila);
 
-    // Campos de texto
-    document.getElementById('cedulaInfractor').value = limpiarValor(d.cedulaInfractor);
+    // Cargar TODOS los campos directamente desde el registro consultado.
+    // Se conservan los valores originales de la hoja sin convertirlos en blanco.
+    document.getElementById('cedulaInfractor').value = limpiarValor(d.cedulaInfractor || d.cedula);
     document.getElementById('nombre').value = limpiarValor(d.nombre).toUpperCase();
     document.getElementById('placa').value = limpiarValor(d.placa).toUpperCase();
-    document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo).toUpperCase();
+    document.getElementById('numeroComparendo').value = limpiarValor(d.numeroComparendo || d.nroComparendo || d.comparendo).toUpperCase();
 
-    // Normalización de selects para garantizar coincidencia exacta con las opciones del HTML
-    const tipoInfraccionValor = normalizarTipoInfraccion(limpiarValor(d.tipoInfraccion));
-    const tipoAgenteValor = normalizarTipoAgente(limpiarValor(d.tipoAgente));
+    const tipoInfraccionValor = limpiarValor(d.tipoInfraccion || d.infraccion);
+    const tipoAgenteValor = limpiarValor(d.tipoAgente || d.agente);
 
-    document.getElementById('tipoInfraccion').value = tipoInfraccionValor;
-    document.getElementById('tipoAgente').value = tipoAgenteValor;
+    seleccionarValorConservandoTexto('tipoInfraccion', tipoInfraccionValor);
+    seleccionarValorConservandoTexto('tipoAgente', tipoAgenteValor);
 
     // Valores numéricos
     document.getElementById('valorGrua').value = convertirNumero(d.valorGrua);
@@ -762,13 +725,6 @@ function cargarDatosEnFormulario(registro) {
     // Fecha de pago robusta
     const fechaPagoValor = convertirFechaParaInput(d.fechaPago);
     document.getElementById('fechaPago').value = fechaPagoValor;
-
-    // Conserva la información completa guardada en Resumen Facturación.
-    // Después recalculamos los valores para mantener la lógica actual.
-    const resumenGuardado = limpiarValor(d.resumenFacturacion || d.observaciones);
-    if (resumenGuardado) {
-        document.getElementById('observacionesTexto').textContent = resumenGuardado;
-    }
 
     // UI
     document.getElementById('modoEdicion').style.display = 'flex';
@@ -780,6 +736,33 @@ function cargarDatosEnFormulario(registro) {
 
     const tab = new bootstrap.Tab(document.getElementById('pills-form-tab'));
     tab.show();
+}
+
+function seleccionarValorConservandoTexto(id, valor) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    const texto = limpiarValor(valor);
+    if (!texto) {
+        select.value = '';
+        return;
+    }
+
+    // Primero intenta coincidencia exacta.
+    let opcion = Array.from(select.options).find(o => o.value === texto);
+    // Luego coincidencia sin distinguir mayúsculas/minúsculas.
+    if (!opcion) {
+        opcion = Array.from(select.options).find(o => o.value.trim().toLowerCase() === texto.toLowerCase());
+    }
+    // Si el dato existente en la hoja no está entre las opciones actuales,
+    // se agrega temporalmente para NO perder la información consultada.
+    if (!opcion) {
+        opcion = document.createElement('option');
+        opcion.value = texto;
+        opcion.textContent = texto;
+        opcion.dataset.consultado = 'true';
+        select.appendChild(opcion);
+    }
+    select.value = opcion.value;
 }
 
 function normalizarTipoInfraccion(valor) {
@@ -854,51 +837,39 @@ function cargarConsolidado() {
 function renderizarTablaConsolidado(datos) {
     const tbody = document.getElementById('tbodyConsolidado');
     tbody.innerHTML = '';
-
-    if (!Array.isArray(datos) || datos.length === 0) {
+    if (datos.length === 0) {
         document.getElementById('contenedorTablaConsolidado').style.display = 'none';
         document.getElementById('sinDatosConsolidado').style.display = 'block';
-        document.getElementById('totalGralGrua').textContent = formatearMoneda(0);
-        document.getElementById('totalGralParqueadero').textContent = formatearMoneda(0);
-        document.getElementById('totalGralFinal').textContent = formatearMoneda(0);
         return;
     }
-
     document.getElementById('sinDatosConsolidado').style.display = 'none';
     document.getElementById('contenedorTablaConsolidado').style.display = 'block';
-
-    let sumaGrua = 0;
-    let sumaParqueadero = 0;
-    let sumaTotal = 0;
-
+    let sumaGrua = 0, sumaParqueadero = 0, sumaTotal = 0;
     datos.forEach(reg => {
         const d = reg.datos || {};
         const valGrua = convertirNumero(d.valorGrua);
         const valParq = convertirNumero(d.valorParqueadero);
         const valTot = convertirNumero(d.total);
-
         sumaGrua += valGrua;
         sumaParqueadero += valParq;
         sumaTotal += valTot;
-
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${escaparHTML(formatearFechaParaTabla(d.fechaRegistro || ''))}</td>
+            <td>${escaparHTML(d.fechaRegistro || '')}</td>
             <td>${escaparHTML(d.cedulaInfractor || '')}</td>
             <td>${escaparHTML((d.nombre || '').toUpperCase())}</td>
             <td><strong>${escaparHTML((d.placa || '').toUpperCase())}</strong></td>
-            <td>${escaparHTML((d.numeroComparendo || '').toUpperCase())}</td>
-            <td>${escaparHTML(d.tipoInfraccion || '')}</td>
-            <td class="tipo-agente">${escaparHTML(d.tipoAgente || '')}</td>
-            <td>${escaparHTML(formatearFechaParaTabla(d.fechaPago || ''))}</td>
+            <td>${escaparHTML((d.numeroComparendo || d.nroComparendo || d.comparendo || '').toUpperCase())}</td>
+            <td>${escaparHTML(d.tipoInfraccion || d.infraccion || '')}</td>
+            <td>${escaparHTML(d.tipoAgente || d.agente || '')}</td>
+            <td>${formatearFechaParaTabla(d.fechaPago || '')}</td>
             <td class="text-end">${formatearMoneda(valGrua)}</td>
             <td class="text-end">${formatearMoneda(valParq)}</td>
             <td class="text-end fw-bold">${formatearMoneda(valTot)}</td>
-            <td class="resumen-facturacion">${escaparHTML(d.resumenFacturacion || d.observaciones || '')}</td>
+            <td>${escaparHTML(d.resumenFacturacion || d.observaciones || '')}</td>
         `;
         tbody.appendChild(tr);
     });
-
     document.getElementById('totalGralGrua').textContent = formatearMoneda(sumaGrua);
     document.getElementById('totalGralParqueadero').textContent = formatearMoneda(sumaParqueadero);
     document.getElementById('totalGralFinal').textContent = formatearMoneda(sumaTotal);

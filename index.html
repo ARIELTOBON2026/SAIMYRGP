@@ -371,7 +371,7 @@ body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -appl
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuWIcxtvrVD3Pn_Gv2ql6TWomKVzxmTgE6G_rBBKazDCRCJRSGjcS-AVdPZPIeBVMM/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfKddWrsnU3hslImql-TT96I7-4T_p9Se8_sacnseusxt6av4qirZsifzel3M8kHHF/exec";
 let filaEditando = null;
 let registrosBusquedaActual = [];
 let datosConsolidadoGlobal = [];
@@ -379,74 +379,49 @@ let datosFiltrados = [];
 let pdfBlobGlobal = null;
 
 function callGoogleScript(accion, params = {}) {
-    const payload = { accion: accion, ...params };
-    console.log("📤 Solicitud a GAS:", payload);
-    const accionesLectura = ['buscar', 'listarTodos', 'obtenerRegistro'];
-    if (accionesLectura.includes(accion)) {
-        return new Promise((resolve, reject) => {
-            const callbackName = '__gasCallback_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-            const script = document.createElement('script');
-            let finalizado = false;
-            const limpiar = () => {
-                if (finalizado) return;
-                finalizado = true;
-                clearTimeout(timeoutId);
-                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-                if (script.parentNode) script.parentNode.removeChild(script);
-            };
-            const timeoutId = setTimeout(() => {
-                limpiar();
-                reject(new Error('Timeout: Google Apps Script tardó demasiado en responder.'));
-            }, 25000);
-            window[callbackName] = function(response) {
-                limpiar();
-                console.log("📥 Respuesta JSONP de GAS:", response);
-                if (!response || typeof response !== 'object') {
-                    reject(new Error('La respuesta del servidor no tiene un formato válido.'));
-                    return;
-                }
-                resolve(response);
-            };
-            script.onerror = function() {
-                limpiar();
-                reject(new Error('No se pudo conectar con Google Apps Script.'));
-            };
-            const query = new URLSearchParams();
-            query.set('accion', accion);
-            query.set('callback', callbackName);
-            query.set('_ts', Date.now().toString());
-            Object.keys(params || {}).forEach(key => {
-                const value = params[key];
-                if (value !== undefined && value !== null) {
-                    query.set(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-                }
-            });
-            script.src = SCRIPT_URL + '?' + query.toString();
-            script.async = true;
-            document.head.appendChild(script);
+    // JSONP evita bloqueos CORS al consumir la Web App desde GitHub Pages.
+    // Las acciones de escritura mantienen las mismas funciones y datos del backend.
+    return new Promise((resolve, reject) => {
+        const callbackName = '__gasCallback_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        const script = document.createElement('script');
+        let finalizado = false;
+        let timeoutId;
+        const limpiar = () => {
+            if (finalizado) return;
+            finalizado = true;
+            clearTimeout(timeoutId);
+            try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+            if (script.parentNode) script.parentNode.removeChild(script);
+        };
+        timeoutId = setTimeout(() => {
+            limpiar();
+            reject(new Error('Timeout: Google Apps Script tardó demasiado en responder.'));
+        }, 30000);
+        window[callbackName] = function(response) {
+            limpiar();
+            if (!response || typeof response !== 'object') {
+                reject(new Error('La respuesta del servidor no tiene un formato válido.'));
+                return;
+            }
+            resolve(response);
+        };
+        script.onerror = function() {
+            limpiar();
+            reject(new Error('No se pudo conectar con Google Apps Script. Verifique el despliegue y los permisos.'));
+        };
+        const query = new URLSearchParams();
+        query.set('accion', accion);
+        query.set('callback', callbackName);
+        query.set('_ts', Date.now().toString());
+        Object.keys(params || {}).forEach(key => {
+            const value = params[key];
+            if (value !== undefined && value !== null) {
+                query.set(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+            }
         });
-    }
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
-    return fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-    })
-    .then(async response => {
-        clearTimeout(timeoutId);
-        const text = await response.text();
-        console.log("📥 Respuesta POST de GAS:", text.substring(0, 1000));
-        if (!response.ok) throw new Error('Error HTTP ' + response.status);
-        try { return JSON.parse(text); }
-        catch (e) { console.error('❌ Respuesta POST no JSON:', text); throw new Error('El servidor no devolvió JSON válido.'); }
-    })
-    .catch(error => {
-        clearTimeout(timeoutId);
-        if (error.name === 'AbortError') throw new Error('Timeout: Google Apps Script tardó demasiado.');
-        console.error('❌ Error POST a GAS:', error);
-        throw error instanceof Error ? error : new Error('No se pudo conectar con Google Apps Script.');
+        script.src = SCRIPT_URL + '?' + query.toString();
+        script.async = true;
+        document.head.appendChild(script);
     });
 }
 
@@ -674,7 +649,7 @@ function ejecutarBusqueda() {
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
         mostrarAlerta('⚠️ La búsqueda tardó demasiado.', 'warning');
-    }, 10000);
+    }, 32000);
     callGoogleScript('buscar', { valor: valor })
     .then(response => {
         clearTimeout(timeoutId);
@@ -774,7 +749,7 @@ function cargarConsolidado() {
         loading.style.display = 'none';
         sinDatos.style.display = 'block';
         mostrarAlerta('⚠️ El servidor tardó demasiado. Intente nuevamente.', 'warning');
-    }, 20000);
+    }, 32000);
     callGoogleScript('listarTodos')
     .then(response => {
         clearTimeout(timeoutId);
@@ -831,7 +806,7 @@ function renderizarTablaConsolidado(datos) {
             <td><strong>${escaparHTML((d.placa || '').toUpperCase())}</strong></td>
             <td>${escaparHTML((d.numeroComparendo || d.nroComparendo || d.comparendo || '').toUpperCase())}</td>
             <td>${escaparHTML(d.tipoInfraccion || d.infraccion || '')}</td>
-            <td>${formatearFechaParaTabla(d.fechaPago || '')}</td>
+            <td>${escaparHTML(formatearFechaParaTabla(d.fechaPago || ''))}</td>
             <td class="text-end">${formatearMoneda(valGrua)}</td>
             <td class="text-end">${formatearMoneda(valParq)}</td>
             <td class="text-end fw-bold">${formatearMoneda(valTot)}</td>
@@ -904,7 +879,7 @@ function exportarPDF() {
         headStyles: { fillColor: [13, 110, 253], textColor: 255, fontStyle: 'bold' },
         footStyles: { fillColor: [248, 249, 250], textColor: [0, 0, 0], fontStyle: 'bold' },
         styles: { fontSize: 8, cellPadding: 2 },
-        columnStyles: { 6: { halign: 'right' }, 7: { halign: 'right' }, 8: { halign: 'right', fontStyle: 'bold' } }
+        columnStyles: { 7: { halign: 'right' }, 8: { halign: 'right' }, 9: { halign: 'right', fontStyle: 'bold' } }
     });
     pdfBlobGlobal = doc.output('blob');
     const pdfURL = URL.createObjectURL(pdfBlobGlobal);
@@ -930,8 +905,18 @@ function descargarPDFDesdeVistaPrevia() {
 function mostrarAlerta(mensaje, tipo) {
     const container = document.getElementById('alertContainer');
     const alert = document.createElement('div');
-    alert.className = `alert alert-${tipo} alert-dismissible fade show alert-custom`;
-    alert.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    const tiposPermitidos = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
+    const tipoSeguro = tiposPermitidos.includes(tipo) ? tipo : 'info';
+    alert.className = `alert alert-${tipoSeguro} alert-dismissible fade show alert-custom`;
+    const texto = document.createElement('span');
+    texto.textContent = String(mensaje == null ? '' : mensaje);
+    const cerrar = document.createElement('button');
+    cerrar.type = 'button';
+    cerrar.className = 'btn-close';
+    cerrar.setAttribute('data-bs-dismiss', 'alert');
+    cerrar.setAttribute('aria-label', 'Cerrar');
+    alert.appendChild(texto);
+    alert.appendChild(cerrar);
     container.appendChild(alert);
     setTimeout(() => { if (alert.parentNode) alert.remove(); }, 4000);
 }
@@ -954,7 +939,10 @@ function limpiarValor(valor) { return (valor === null || valor === undefined) ? 
 function convertirNumero(valor) {
     if (valor === null || valor === undefined || valor === '') return 0;
     if (typeof valor === 'number') return valor;
-    const texto = String(valor).replace(/\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+    let texto = String(valor).trim().replace(/\$/g, '').replace(/\s/g, '');
+    if (texto.includes('.') && texto.includes(',')) texto = texto.replace(/\./g, '').replace(',', '.');
+    else if (texto.includes(',')) texto = texto.replace(',', '.');
+    else if (/^-?\d{1,3}(\.\d{3})+$/.test(texto)) texto = texto.replace(/\./g, '');
     const numero = parseFloat(texto);
     return isNaN(numero) ? 0 : numero;
 }

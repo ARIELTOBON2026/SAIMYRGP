@@ -31,11 +31,47 @@ body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -appl
 .btn-action i { font-size: 1.25rem; }
 .btn-action:hover { transform: translateY(-2px); }
 .alert-custom { box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); border: none; border-radius: 0.5rem; }
-.table-consolidado th { background-color: #f8f9fa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #495057; white-space: nowrap; vertical-align: middle; }
-.table-consolidado td { font-size: 0.85rem; vertical-align: middle; }
-@media (max-width: 768px) { .btn-action { min-width: 80px; font-size: 0.7rem; padding: 0.5rem; } .btn-action i { font-size: 1.1rem; } }
-.table-consolidado { min-width: 1200px; }
-.table-consolidado td { white-space: normal; vertical-align: middle; }
+
+/* 🛠️ CORRECCIÓN DE VISUALIZACIÓN DE TABLA Y TOTALES */
+.table-consolidado { 
+  min-width: 1400px; /* Aumentado para dar más espacio a las columnas numéricas */
+}
+.table-consolidado th { 
+  background-color: #f8f9fa; 
+  font-size: 0.75rem; 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  color: #495057; 
+  white-space: nowrap; 
+  vertical-align: middle; 
+}
+.table-consolidado td { 
+  font-size: 0.85rem; 
+  vertical-align: middle; 
+  white-space: normal; 
+}
+/* Forzar que las celdas de totales y valores numéricos no se rompan en varias líneas */
+.table-consolidado th.text-end,
+.table-consolidado td.text-end {
+  white-space: nowrap;
+  min-width: 130px;
+}
+.table-consolidado tfoot td {
+  white-space: nowrap;
+  padding: 0.75rem 1rem;
+}
+.table-consolidado tfoot td.text-end {
+  min-width: 140px;
+}
+.table-consolidado tfoot td:last-child {
+  min-width: 160px;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) { 
+  .btn-action { min-width: 80px; font-size: 0.7rem; padding: 0.5rem; } 
+  .btn-action i { font-size: 1.1rem; } 
+}
 </style>
 </head>
 <body>
@@ -292,12 +328,13 @@ body { background-color: var(--bg-color); font-family: 'Inter', system-ui, -appl
                 </tr>
               </thead>
               <tbody id="tbodyConsolidado"></tbody>
+              <!-- 🛠️ CORRECCIÓN: Estilos en línea para garantizar que los totales no se desborden -->
               <tfoot class="table-group-divider fw-bold bg-light">
                 <tr>
                   <td colspan="7" class="text-end">TOTALES GENERALES:</td>
-                  <td class="text-end" id="totalGralGrua">$ 0</td>
-                  <td class="text-end" id="totalGralParqueadero">$ 0</td>
-                  <td class="text-end text-primary" id="totalGralFinal">$ 0</td>
+                  <td class="text-end" id="totalGralGrua" style="white-space: nowrap;">$ 0</td>
+                  <td class="text-end" id="totalGralParqueadero" style="white-space: nowrap;">$ 0</td>
+                  <td class="text-end text-primary" id="totalGralFinal" style="white-space: nowrap; font-size: 1.1rem;">$ 0</td>
                 </tr>
               </tfoot>
             </table>
@@ -695,7 +732,7 @@ function ejecutarBusqueda() {
             let html = `<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-dark"><tr><th>Fecha</th><th>Cédula</th><th>Nombre</th><th>Placa</th><th>Nro. Comparendo</th><th>Tipo Infracción</th><th>Tipo Agente</th><th>Fecha Pago</th><th>Total</th><th>Acción</th></tr></thead><tbody>`;
             registrosBusquedaActual.forEach((reg, idx) => {
                 const d = reg.datos || {};
-                html += `<tr><td>${escaparHTML(d.fechaRegistro||'')}</td><td>${escaparHTML(d.cedulaInfractor||'')}</td><td>${escaparHTML(d.nombre||'')}</td><td><strong>${escaparHTML(d.placa||'')}</strong></td><td>${escaparHTML(d.numeroComparendo || d.nroComparendo || d.comparendo || '')}</td><td>${escaparHTML(d.tipoInfraccion || d.infraccion || '')}</td><td>${escaparHTML(d.tipoAgente || d.agente || '')}</td><td>${escaparHTML(formatearFechaParaTabla(d.fechaPago || ''))}</td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
+                html += `<tr><td>${escaparHTML(String(d.fechaRegistro||''))}</td><td>${escaparHTML(String(d.cedulaInfractor||''))}</td><td>${escaparHTML(String(d.nombre||'').toUpperCase())}</td><td><strong>${escaparHTML(String(d.placa||'').toUpperCase())}</strong></td><td>${escaparHTML(String(d.numeroComparendo || d.nroComparendo || d.comparendo || '').toUpperCase())}</td><td>${escaparHTML(String(d.tipoInfraccion || d.infraccion || ''))}</td><td>${escaparHTML(String(d.tipoAgente || d.agente || ''))}</td><td>${escaparHTML(String(formatearFechaParaTabla(d.fechaPago || '')))}</td><td>${formatearMoneda(d.total)}</td><td><button class="btn btn-sm btn-primary" onclick="cargarDatosEnFormulario(registrosBusquedaActual[${idx}]); bootstrap.Modal.getInstance(document.getElementById('modalResultados')).hide();">Editar</button></td></tr>`;
             });
             html += `</tbody></table></div>`;
             resultadosDiv.innerHTML = html;
@@ -834,13 +871,13 @@ function renderizarTablaConsolidado(datos) {
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${escaparHTML(d.fechaRegistro || '')}</td>
-            <td>${escaparHTML(d.cedulaInfractor || '')}</td>
-            <td>${escaparHTML((d.nombre || '').toUpperCase())}</td>
-            <td><strong>${escaparHTML((d.placa || '').toUpperCase())}</strong></td>
-            <td>${escaparHTML((d.numeroComparendo || d.nroComparendo || d.comparendo || '').toUpperCase())}</td>
-            <td>${escaparHTML(d.tipoInfraccion || d.infraccion || '')}</td>
-            <td>${escaparHTML(formatearFechaParaTabla(d.fechaPago || ''))}</td>
+            <td>${escaparHTML(String(d.fechaRegistro || ''))}</td>
+            <td>${escaparHTML(String(d.cedulaInfractor || ''))}</td>
+            <td>${escaparHTML(String(d.nombre || '').toUpperCase())}</td>
+            <td><strong>${escaparHTML(String(d.placa || '').toUpperCase())}</strong></td>
+            <td>${escaparHTML(String(d.numeroComparendo || d.nroComparendo || d.comparendo || '').toUpperCase())}</td>
+            <td>${escaparHTML(String(d.tipoInfraccion || d.infraccion || ''))}</td>
+            <td>${escaparHTML(String(formatearFechaParaTabla(d.fechaPago || '')))}</td>
             <td class="text-end">${formatearMoneda(valGrua)}</td>
             <td class="text-end">${formatearMoneda(valParq)}</td>
             <td class="text-end fw-bold">${formatearMoneda(valTot)}</td>
